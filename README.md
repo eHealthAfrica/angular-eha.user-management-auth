@@ -1,30 +1,30 @@
-# angular-eha.couchdb-auth
+# angular-eha.user-management-auth
 
-[![Build Status](https://travis-ci.org/eHealthAfrica/angular-eha.couchdb-auth.svg?&branch=master)](https://travis-ci.org/eHealthAfrica/angular-eha.couchdb-auth)
+[![Build Status](https://travis-ci.org/eHealthAfrica/angular-eha.user-management-auth.svg?&branch=master)](https://travis-ci.org/eHealthAfrica/angular-eha.user-management-auth)
 
-A simple Angular.js CouchDB auth interface.  Works great directly with a CouchDB instance, works even better with a [CouchDB proxy/wrapper API](https://github.com/eHealthAfrica/hapi-couchdb-auth-bearer-plugin).
+Angular client module for eHealth's User Management Service
 
 ## Installation
 
-Install with npm:
+Install version 1.0.0 with Bower:
 
-    npm install --save angular-eha.couchdb-auth
-
-Or alternatively bower:
-
-    bower install --save angular-eha.couchdb-auth
+    bower install --save https://github.com/eHealthAfrica/angular-eha.user-management-auth#1.0.0
 
 ## Usage
 
-If you're using wiredep, then all you need to do is add `eha.couchdb-auth` as an angular module dependency somewhere sensible in your app. In the absense of wiredep, you'll need to manually bundle `dist/couchdb-auth.js`.
+If you're using wiredep, then all you need to do is add
+`eha.user-management-auth` as an angular module dependency somewhere
+sensible in your app. In the absense of wiredep, you'll need to
+manually bundle `dist/user-management-auth.js`.
 
 ### Configuration
 
-The module can be configured through the `ehaCouchDbAuthServiceProvider` via a `config` block:
+The module can be configured through the
+`ehaUserManagementAuthServiceProvider` via a `config` block:
 
 ```javascript
-app.config(function(ehaCouchDbAuthServiceProvider) {
-  ehaCouchDbAuthServiceProvider.config({
+app.config(function(ehaUserManagementAuthServiceProvider) {
+  ehaUserManagementAuthServiceProvider.config({
     url: 'http://mycouchdb.com',            // CouchDB/Proxy URL exposing _session endpoints
     localStorageNamespace: 'mnutrition',    // Namespace for localstorage (default: lf)
     adminRoles: ['admin'],                  // 'Admin' CouchDB role. (default: `['_admin']`)
@@ -51,41 +51,7 @@ react to intercepted errors using the `.on` method, see
 [below](#onevent-handler). The interceptor will act on communications
 with locations matching one of the values in `hosts`.
 
-### ehaCouchDbAuthService
-
-#### `signIn(params)`
-
-_Promise/A+_ Attempt to create a new CouchDB session with given credentials.
-
-##### Params
-
-- **username** - CouchDB user `name`
-- **password** - CouchDB user `password`
-
-#### `signOut()`
-
-_Promise/A+_ Attempt to destroy a CouchDB sessions and reset local authenitcation status.
-
-####  `resetPassword(params)`
-
-_Promise/A+_ Password reset features. Typical pattern; request reset token by email, follow link, change password.
-
-**n.b. CouchDB does not provide this functionality. To leverage this functionality you require a compatible 'backend'**
-
-##### Params
-
-- **email** - Email address of account for which you wish to reset the password
-- **callbackUrl** - The URL that the `resetToken` should be appended to in order to complete the flow
-- **token** - A valid `resetToken`
-- **password** - The new password
-
-##### Reset token flow
-
-Calling `resetPassword()` with `email` and `callbackUrl` parameters will initiate the password reset token request flow.
-
-##### Change password flow
-
-Calling `resetPassword()` with a valid `token` and a new `password` will initiate the change password flow.
+### ehaUserManagementAuthService
 
 #### `getSession()`
 
@@ -122,7 +88,7 @@ have their arguments injected by `$routeProvider`, so use them for
 example like this:
 
 ```js
-var auth = ehaCouchDbAuthServiceProvider.requireAuthenticatedUser;
+var auth = ehaUserManagementAuthServiceProvider.requireAuthenticatedUser;
 $routeProvider
   .when('/page', {
     templateUrl: 'views/page.html',
@@ -145,8 +111,8 @@ _Promise/A+_ Check if the user has a particular role.
 _Note_: These functions are created dynamically during the configuration of the module. These can cause problems when using the function within `angular-ui-router` if the routes are loaded before configuring the module. This can be avoided by providing the configuration for the roles when initializing the routes:
 
 ```
-  .config(function($stateProvider, ehaCouchDbAuthServiceProvider) {
-    ehaCouchDbAuthServiceProvider.config({
+  .config(function($stateProvider, ehaUserManagementAuthServiceProvider) {
+    ehaUserManagementAuthServiceProvider.config({
       userRoles: [
         'data_provider',
         'analyst'
@@ -156,7 +122,7 @@ _Note_: These functions are created dynamically during the configuration of the 
     .state('upload', {
       url: '/upload',
       resolve: {
-        isDataProvider: ehaCouchDbAuthServiceProvider.requireDataProviderUser
+        isDataProvider: ehaUserManagementAuthServiceProvider.requireDataProviderUser
       },
       views: {
         ...
@@ -174,7 +140,7 @@ Similar to [require<role-name>User](#requirerole-nameuser) but supports checking
 ```js
 // Within a $stateProvider.state declaration
 resolve: {
-  authorization: ehaCouchDbAuthServiceProvider.requireUserWithRoles([
+  authorization: ehaUserManagementAuthServiceProvider.requireUserWithRoles([
     'data_provider',
     'analyst'
   ])
@@ -211,10 +177,16 @@ e.g:
 
 ## License
 
-Copyright 2015 Matt Richards <matt.richards@ehealthnigeria.org>
+Copyright 2016 eHealh Africa
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License"); you
+may not use this file except in compliance with the License.  You may
+obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the specific language governing permissions and limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+implied.  See the License for the specific language governing
+permissions and limitations under the License.

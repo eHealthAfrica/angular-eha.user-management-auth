@@ -1,18 +1,13 @@
-;(function() {
+(function() {
   'use strict';
-  /**
-   * @ngdoc service
-   * @function
-   * @name ehaCouchDbService
-   * @module eha.couchdb-auth
-   */
+
   var ngModule = angular
-  .module('eha.couchdb-auth.auth.service', [
+  .module('eha.user-management-auth.auth.service', [
     'restangular',
     'LocalForageModule'
   ]);
 
-  function CouchDbAuthService(options,
+  function UserManagementAuthService(options,
                               Restangular,
                               $log,
                               $q,
@@ -39,100 +34,6 @@
                       });
     }
 
-    function signIn(user) {
-      return $q.when(Restangular
-        .all(options.sessionEndpoint)
-        .customPOST({
-          name: user.username,
-          password: user.password
-        }))
-        .then(function(user) {
-          return user.plain();
-        })
-        .then(setCurrentUser)
-        .then(function(user) {
-          return getSession()
-                  .then(function(userMeta) {
-                    return angular.extend(userMeta.plain(), user);
-                  });
-        })
-        .then(setCurrentUser)
-        .then(function(user) {
-          if (!user || !user.ok) {
-            $log.debug('couchdb:login:failure:unknown');
-            return $q.reject(new Error());
-          }
-          eventBus.$broadcast('authenticationStateChange');
-          $log.debug('couchdb:login:success', user);
-          return decorateUser(user);
-        })
-        .catch(function(err) {
-          if (err.status === 401) {
-            $log.debug('couchdb:login:failure:invalid-credentials', err);
-            return $q.reject(new Error('Invalid Credentials'));
-          } else {
-            $log.debug('couchdb:login:failure:unknown', err);
-            return $q.reject(new Error(err));
-          }
-        });
-    }
-
-    function clearLocalUser() {
-      currentUser = null;
-      return $localForage.removeItem('user');
-    }
-
-    function setLocalUser(user) {
-      return $localForage.setItem('user', user);
-    }
-
-    function getLocalUser() {
-      return $localForage.getItem('user');
-    }
-
-    function signOut() {
-      return clearLocalUser().then(function() {
-        eventBus.$broadcast('authenticationStateChange');
-        return true;
-      });
-    }
-
-    function resetPassword(config) {
-      if (config.token && config.password) {
-        return $q.when(Restangular
-                       .all('reset-password')
-                       .customPOST({
-                         token: config.token,
-                         password: config.password
-                       }));
-      }
-
-      if (config.email && config.callbackUrl) {
-        return $q.when(Restangular
-                       .all('reset-password')
-                       .customPOST({
-                         email: config.email,
-                         callbackUrl: config.callbackUrl
-                       }));
-      } else {
-        return $q.reject('You must provide both email and callbackUrl ' +
-                         'properties in the payload');
-      }
-
-    }
-
-    function addAccount() {
-      return $q.reject('NOT_IMPLEMENTED');
-    }
-
-    function updateAccount() {
-      return $q.reject('NOT_IMPLEMENTED');
-    }
-
-    function removeAccount() {
-      return $q.reject('NOT_IMPLEMENTED');
-    }
-
     function decorateUser(user) {
       user.hasRole = function(role) {
         var self = this;
@@ -153,49 +54,28 @@
     }
 
     function getCurrentUser() {
-      if (currentUser) {
-        return $q.when(decorateUser(currentUser));
-      }
 
-      return getLocalUser()
-        .then(function(user) {
-          if (user) {
-            currentUser = user;
-            return decorateUser(user);
-          } else {
-            return $q.reject('User not found');
-          }
-        })
-        .then(function(user) {
-          return getSession()
-                  .then(function() {
-                    return user;
-                  });
-        })
-        .catch(function(err) {
-          $log.debug(err);
-          return $q.reject(err);
-        });
+      if (currentUser) {
+        return $q.when(currentUser);
+      } else {
+        return getSession()
+          .then(function(user) {
+            currentUser = decorateUser(user);
+          })
+          .catch(function(err) {
+            $log.debug(err);
+            return $q.reject(err);
+          });
+      }
     }
 
-    function setCurrentUser(user) {
-      if (user) {
-        currentUser =  user;
-        return setLocalUser(user);
+    function goToExternal(route) {
+      return function() {
+        $window.location = route
       }
-
-      $q.reject('No user found');
     }
 
     return {
-      signIn: signIn,
-      signOut: signOut,
-      resetPassword: resetPassword,
-      accounts: {
-        add: addAccount,
-        update: updateAccount,
-        remove: removeAccount
-      },
       getSession: getSession,
       getCurrentUser: getCurrentUser,
       on: eventBus.$on.bind(eventBus),
@@ -203,16 +83,18 @@
       isAuthenticated: function() {
         if (!currentUser) {
           return $q.reject();
+        } else {
+          return getSession();
         }
-
-        return getSession();
-      }
+      },
+      login: goToExternal('/login'),
+      logout: goToExternal('/logout')
     };
   }
 
-  ngModule.provider('ehaCouchDbAuthService',
-  ['$localForageProvider', 'ehaCouchDbAuthHttpInterceptorProvider', '$httpProvider', function ehaCouchDbAuthService($localForageProvider,
-                                 ehaCouchDbAuthHttpInterceptorProvider,
+  ngModule.provider('ehaUserManagementAuthService',
+  ['$localForageProvider', 'ehaUserManagementAuthHttpInterceptorProvider', '$httpProvider', function ehaUserManagementAuthService($localForageProvider,
+                                 ehaUserManagementAuthHttpInterceptorProvider,
                                  $httpProvider) {
 
     var options = {
@@ -237,11 +119,11 @@
       return words.join('');
     }
 
-    function requireUserWithRoles(ehaCouchDbAuthService, $q, roles) {
-      return ehaCouchDbAuthService.getCurrentUser()
+    function requireUserWithRoles(ehaUserManagementAuthService, $q, roles) {
+      return ehaUserManagementAuthService.getCurrentUser()
         .then(function(user) {
           if (user && !user.isAdmin() && !user.hasRole(roles)) {
-            ehaCouchDbAuthService.trigger('unauthorized');
+            ehaUserManagementAuthService.trigger('unauthorized');
             return $q.reject('unauthorized');
           }
           return user;
@@ -250,7 +132,7 @@
           if (err === 'unauthorized') {
             throw err;
           }
-          ehaCouchDbAuthService.trigger('unauthenticated');
+          ehaUserManagementAuthService.trigger('unauthenticated');
           return $q.reject('unauthenticated');
         });
     }
@@ -264,42 +146,42 @@
       });
 
       if (config.interceptor) {
-        ehaCouchDbAuthHttpInterceptorProvider.config({
+        ehaUserManagementAuthHttpInterceptorProvider.config({
           url: config.url,
           hosts: config.interceptor.hosts
         });
-        $httpProvider.interceptors.push('ehaCouchDbAuthHttpInterceptor');
+        $httpProvider.interceptors.push('ehaUserManagementAuthHttpInterceptor');
       }
 
       if (config.userRoles) {
         config.userRoles.forEach(function(role) {
           var functionName = 'require' + camelCase(role) + 'User';
-          this[functionName] = function(ehaCouchDbAuthService, $q) {
-            return requireUserWithRoles(ehaCouchDbAuthService, $q, [role]);
+          this[functionName] = function(ehaUserManagementAuthService, $q) {
+            return requireUserWithRoles(ehaUserManagementAuthService, $q, [role]);
           };
         }.bind(this));
       }
     };
 
-    this.requireAdminUser = function(ehaCouchDbAuthService, $q) {
+    this.requireAdminUser = function(ehaUserManagementAuthService, $q) {
       return requireUserWithRoles(
-        ehaCouchDbAuthService, $q, options.adminRoles);
+        ehaUserManagementAuthService, $q, options.adminRoles);
     };
 
-    this.requireAuthenticatedUser = function(ehaCouchDbAuthService, $q) {
-      return ehaCouchDbAuthService.getCurrentUser()
+    this.requireAuthenticatedUser = function(ehaUserManagementAuthService, $q) {
+      return ehaUserManagementAuthService.getCurrentUser()
                 .then(function(user) {
                   return user;
                 })
                 .catch(function(err) {
-                  ehaCouchDbAuthService.trigger('unauthenticated');
+                  ehaUserManagementAuthService.trigger('unauthenticated');
                   return $q.reject('unauthenticated');
                 });
     };
 
     this.requireUserWithRoles = function(roles) {
-      return function(ehaCouchDbAuthService, $q) {
-        return requireUserWithRoles(ehaCouchDbAuthService, $q, roles);
+      return function(ehaUserManagementAuthService, $q) {
+        return requireUserWithRoles(ehaUserManagementAuthService, $q, roles);
       };
     };
 
@@ -315,7 +197,7 @@
         }
       );
 
-      return new CouchDbAuthService(options,
+      return new UserManagementAuthService(options,
                                     restangular,
                                     $log,
                                     $q,
@@ -337,12 +219,12 @@
   /**
    * @ngdoc service
    * @function
-   * @name EhaCouchDbAuthHttpInterceptor
-   * @module eha.couchdb-auth.http-interceptor
+   * @name EhaUserManagementAuthHttpInterceptor
+   * @module eha.user-management-auth.http-interceptor
    */
-  var ngModule = angular.module('eha.couchdb-auth.http-interceptor', []);
+  var ngModule = angular.module('eha.user-management-auth.http-interceptor', []);
 
-  function EhaCouchDbAuthHttpInterceptor(options, $injector) {
+  function EhaUserManagementAuthHttpInterceptor(options, $injector) {
 
     function hostMatch(url) {
       var hostMatches = options.hosts.filter(function(host) {
@@ -358,7 +240,7 @@
       request: function(request) {
         if (hostMatch(request.url)) {
           // Grab the service this way to avoid a circular dependency
-          var auth = $injector.get('ehaCouchDbAuthService');
+          var auth = $injector.get('ehaUserManagementAuthService');
           // Try to get current user
           return auth.getCurrentUser()
             .then(function(user) {
@@ -381,7 +263,7 @@
       responseError: function(rejection) {
         // Check for 401 and hostMatch
         if (rejection.status === 401 && hostMatch(rejection.config.url)) {
-          var auth = $injector.get('ehaCouchDbAuthService');
+          var auth = $injector.get('ehaUserManagementAuthService');
           auth.trigger('unauthenticated');
         }
         return $q.reject(rejection);
@@ -389,14 +271,14 @@
     };
   }
 
-  ngModule.provider('ehaCouchDbAuthHttpInterceptor', function() {
+  ngModule.provider('ehaUserManagementAuthHttpInterceptor', function() {
     var options = {};
     this.config = function(config) {
       options = config;
     };
 
     this.$get = ['$injector', function($injector) {
-      return new EhaCouchDbAuthHttpInterceptor(options, $injector);
+      return new EhaUserManagementAuthHttpInterceptor(options, $injector);
     }];
   });
 
@@ -407,8 +289,8 @@
 
 })();
 
-angular.module('eha.couchdb-auth.show-for-role.directive', [])
-  .directive('ehaShowForRole', ['ehaCouchDbAuthService', '$animate', '$parse', '$q', '$log', function(ehaCouchDbAuthService,
+angular.module('eha.user-management-auth.show-for-role.directive', [])
+  .directive('ehaShowForRole', ['ehaUserManagementAuthService', '$animate', '$parse', '$q', '$log', function(ehaUserManagementAuthService,
                                         $animate,
                                         $parse,
                                         $q,
@@ -421,7 +303,7 @@ angular.module('eha.couchdb-auth.show-for-role.directive', [])
       link: function(scope, element, attributes) {
 
         function checkRoles(requiredRoles) {
-          ehaCouchDbAuthService.getCurrentUser()
+          ehaUserManagementAuthService.getCurrentUser()
           .then(function(user) {
             if (user && (user.hasRole(requiredRoles) || user.isAdmin())) {
               $animate.removeClass(element, NG_HIDE_CLASS, {
@@ -453,7 +335,7 @@ angular.module('eha.couchdb-auth.show-for-role.directive', [])
         }
 
         checkRoles(requiredRoles);
-        ehaCouchDbAuthService.on('authenticationStateChange', function() {
+        ehaUserManagementAuthService.on('authenticationStateChange', function() {
           checkRoles(requiredRoles);
         });
       }
@@ -461,8 +343,8 @@ angular.module('eha.couchdb-auth.show-for-role.directive', [])
 
   }]);
 
-angular.module('eha.couchdb-auth.show-authenticated.directive', [])
-  .directive('ehaShowAuthenticated', ['ehaCouchDbAuthService', '$animate', function(ehaCouchDbAuthService, $animate) {
+angular.module('eha.user-management-auth.show-authenticated.directive', [])
+  .directive('ehaShowAuthenticated', ['ehaUserManagementAuthService', '$animate', function(ehaUserManagementAuthService, $animate) {
     var NG_HIDE_CLASS = 'ng-hide';
     var NG_HIDE_IN_PROGRESS_CLASS = 'ng-hide-animate';
     return {
@@ -472,7 +354,7 @@ angular.module('eha.couchdb-auth.show-authenticated.directive', [])
         element.addClass('ng-hide');
 
         function checkStatus() {
-          ehaCouchDbAuthService.isAuthenticated()
+          ehaUserManagementAuthService.isAuthenticated()
             .then(function() {
               $animate.removeClass(element, NG_HIDE_CLASS, {
                 tempClasses: NG_HIDE_IN_PROGRESS_CLASS
@@ -487,18 +369,18 @@ angular.module('eha.couchdb-auth.show-authenticated.directive', [])
 
         checkStatus();
 
-        ehaCouchDbAuthService.on('authenticationStateChange', checkStatus);
+        ehaUserManagementAuthService.on('authenticationStateChange', checkStatus);
       }
     };
   }]);
 
 ;(function() {
   'use strict';
-  var ngModule = angular.module('eha.couchdb-auth', [
-    'eha.couchdb-auth.http-interceptor',
-    'eha.couchdb-auth.auth.service',
-    'eha.couchdb-auth.show-for-role.directive',
-    'eha.couchdb-auth.show-authenticated.directive'
+  var ngModule = angular.module('eha.user-management-auth', [
+    'eha.user-management-auth.http-interceptor',
+    'eha.user-management-auth.auth.service',
+    'eha.user-management-auth.show-for-role.directive',
+    'eha.user-management-auth.show-authenticated.directive'
   ]);
 
   // Check for and export to commonjs environment

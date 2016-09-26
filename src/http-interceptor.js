@@ -3,12 +3,12 @@
   /**
    * @ngdoc service
    * @function
-   * @name EhaCouchDbAuthHttpInterceptor
-   * @module eha.couchdb-auth.http-interceptor
+   * @name EhaUserManagementAuthHttpInterceptor
+   * @module eha.user-management-auth.http-interceptor
    */
-  var ngModule = angular.module('eha.couchdb-auth.http-interceptor', []);
+  var ngModule = angular.module('eha.user-management-auth.http-interceptor', []);
 
-  function EhaCouchDbAuthHttpInterceptor(options, $injector) {
+  function EhaUserManagementAuthHttpInterceptor(options, $injector) {
 
     function hostMatch(url) {
       var hostMatches = options.hosts.filter(function(host) {
@@ -24,7 +24,7 @@
       request: function(request) {
         if (hostMatch(request.url)) {
           // Grab the service this way to avoid a circular dependency
-          var auth = $injector.get('ehaCouchDbAuthService');
+          var auth = $injector.get('ehaUserManagementAuthService');
           // Try to get current user
           return auth.getCurrentUser()
             .then(function(user) {
@@ -47,7 +47,7 @@
       responseError: function(rejection) {
         // Check for 401 and hostMatch
         if (rejection.status === 401 && hostMatch(rejection.config.url)) {
-          var auth = $injector.get('ehaCouchDbAuthService');
+          var auth = $injector.get('ehaUserManagementAuthService');
           auth.trigger('unauthenticated');
         }
         return $q.reject(rejection);
@@ -55,14 +55,14 @@
     };
   }
 
-  ngModule.provider('ehaCouchDbAuthHttpInterceptor', function() {
+  ngModule.provider('ehaUserManagementAuthHttpInterceptor', function() {
     var options = {};
     this.config = function(config) {
       options = config;
     };
 
     this.$get = function($injector) {
-      return new EhaCouchDbAuthHttpInterceptor(options, $injector);
+      return new EhaUserManagementAuthHttpInterceptor(options, $injector);
     };
   });
 

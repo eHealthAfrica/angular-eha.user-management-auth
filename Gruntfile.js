@@ -18,7 +18,7 @@ module.exports = function(grunt) {
         ],
         dest: 'dist/',
         rename: function(dest, src) {
-          return dest + src.replace('scripts','couchdb-auth');
+          return dest + src.replace('scripts','user-management-auth');
         }
       }
     },
@@ -35,7 +35,7 @@ module.exports = function(grunt) {
         options: {
           process: function(src, path) {
             // Remove templates dependency from non-templates version if exists
-            return src.replace(/,\n    'eha\.couchdb-auth\.template'/, '');
+            return src.replace(/,\n    'eha\.user-management-auth\.template'/, '');
           }
         }
       },
@@ -68,8 +68,8 @@ module.exports = function(grunt) {
     uglify: {
       dist: {
         files: {
-          'dist/couchdb-auth.template.min.js': ['.tmp/scripts.template.js'],
-          'dist/couchdb-auth.min.js': ['.tmp/scripts.js']
+          'dist/user-management-auth.template.min.js': ['.tmp/scripts.template.js'],
+          'dist/user-management-auth.min.js': ['.tmp/scripts.js']
         }
       }
     },
@@ -77,7 +77,7 @@ module.exports = function(grunt) {
       dist: {
         src: ['src/**/*.tpl.html'],
         dest: '.tmp/template.js',
-        module: 'eha.couchdb-auth.template',
+        module: 'eha.user-management-auth.template',
         options: {
           rename: function(moduleName) {
             var parts = moduleName.split('/');
@@ -101,34 +101,21 @@ module.exports = function(grunt) {
         autoWatch: true
       }
     },
-    jshint: {
-      all: ['src/**/*.js', 'tests/**/*.spec.js']
-    },
-    jscs: {
-      src: ['src/**/*.js', 'tests/**/*.spec.js'],
-      options: {
-        config: ".jscsrc",
-        requireCurlyBraces: [ "if" ]
-      }
-    }
   });
 
   grunt.registerTask('template', ['html2js']);
-  grunt.registerTask('test', ['template', 'jshint', 'jscs', 'karma:unit']);
+  grunt.registerTask('test', ['template', 'karma:unit']);
   grunt.registerTask('test:watch', ['karma:watch']);
 
   grunt.registerTask('build', function() {
     grunt.task.run([
       'clean',
-
       'concat:scripts',
-
-
       'ngAnnotate',
       'copy:scripts',
       'uglify:dist'
     ]);
   });
 
-  grunt.registerTask('default', ['jshint', 'jscs', 'build']);
+  grunt.registerTask('default', ['build']);
 };

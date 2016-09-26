@@ -1,5 +1,5 @@
-angular.module('eha.couchdb-auth.show-for-role.directive', [])
-  .directive('ehaShowForRole', function(ehaCouchDbAuthService,
+angular.module('eha.user-management-auth.show-for-role.directive', [])
+  .directive('ehaShowForRole', function(ehaUserManagementAuthService,
                                         $animate,
                                         $parse,
                                         $q,
@@ -12,7 +12,7 @@ angular.module('eha.couchdb-auth.show-for-role.directive', [])
       link: function(scope, element, attributes) {
 
         function checkRoles(requiredRoles) {
-          ehaCouchDbAuthService.getCurrentUser()
+          ehaUserManagementAuthService.getCurrentUser()
           .then(function(user) {
             if (user && (user.hasRole(requiredRoles) || user.isAdmin())) {
               $animate.removeClass(element, NG_HIDE_CLASS, {
@@ -44,7 +44,7 @@ angular.module('eha.couchdb-auth.show-for-role.directive', [])
         }
 
         checkRoles(requiredRoles);
-        ehaCouchDbAuthService.on('authenticationStateChange', function() {
+        ehaUserManagementAuthService.on('authenticationStateChange', function() {
           checkRoles(requiredRoles);
         });
       }

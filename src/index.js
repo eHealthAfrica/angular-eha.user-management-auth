@@ -1,10 +1,10 @@
 ;(function() {
   'use strict';
-  var ngModule = angular.module('eha.couchdb-auth', [
-    'eha.couchdb-auth.http-interceptor',
-    'eha.couchdb-auth.auth.service',
-    'eha.couchdb-auth.show-for-role.directive',
-    'eha.couchdb-auth.show-authenticated.directive'
+  var ngModule = angular.module('eha.user-management-auth', [
+    'eha.user-management-auth.http-interceptor',
+    'eha.user-management-auth.auth.service',
+    'eha.user-management-auth.show-for-role.directive',
+    'eha.user-management-auth.show-authenticated.directive'
   ]);
 
   // Check for and export to commonjs environment
