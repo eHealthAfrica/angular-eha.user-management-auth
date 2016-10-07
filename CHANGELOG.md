@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+#### 1.0.0 - 2016-10-07
+
+- Fix: remove the bearer token injection in outcoming requests, and a
+  severe bug leading to an endless cycle in network interceptors
+- Fix: several bugs in the auth service
+
 #### 0.0.1 - 2016-10-07
 
 First release. This Angular module has been forked from

@@ -1,11 +1,6 @@
 ;(function() {
   'use strict';
-  /**
-   * @ngdoc service
-   * @function
-   * @name EhaUserManagementAuthHttpInterceptor
-   * @module eha.user-management-auth.http-interceptor
-   */
+
   var ngModule = angular.module('eha.user-management-auth.http-interceptor', []);
 
   function EhaUserManagementAuthHttpInterceptor(options, $injector) {
@@ -21,29 +16,6 @@
     var $log = $injector.get('$log');
 
     return {
-      request: function(request) {
-        if (hostMatch(request.url)) {
-          // Grab the service this way to avoid a circular dependency
-          var auth = $injector.get('ehaUserManagementAuthService');
-          // Try to get current user
-          return auth.getCurrentUser()
-            .then(function(user) {
-              if (user && user.bearerToken) {
-                // If user and user.bearerToken are found configure the
-                // Authorization header for this call appropriately
-                request.headers.Authorization = 'Bearer ' + user.bearerToken;
-              }
-              return request;
-            })
-            .catch(function(err) {
-              $log.debug(err);
-              // If we don't find a user then just allow the request to pass
-              // through un modified
-              return request;
-            });
-        }
-        return $q.when(request);
-      },
       responseError: function(rejection) {
         // Check for 401 and hostMatch
         if (rejection.status === 401 && hostMatch(rejection.config.url)) {

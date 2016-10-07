@@ -21,34 +21,32 @@
     var eventBus = $rootScope.$new(true);
 
     function getSession() {
-      var sessionUrl = options.url + '/' + options.sessionEndpoint;
-      return $q.when(Restangular
-                      .oneUrl('session', sessionUrl)
-                      .get())
-                      .then(function(session) {
-                        if (session.userCtx) {
-                          return session;
-                        } else {
-                          $q.reject('Session not found');
-                        }
-                      });
+      var sessionUrl = options.sessionEndpoint;
+      return $q
+        .when(Restangular.oneUrl('session', sessionUrl).get())
+        .then(function(session) {
+          var context = session.userCtx
+          if (context) {
+            return context;
+          } else {
+            $q.reject('User context not found');
+          }
+        });
     }
 
     function decorateUser(user) {
       user.hasRole = function(role) {
-        var self = this;
         if (angular.isArray(role)) {
           var matches = role.filter(function(r) {
-            return self.roles.indexOf(r) > -1;
+            return user.roles.indexOf(r) > -1;
           });
           return !!matches.length;
         } else if (angular.isString(role)) {
-          return this.roles.indexOf(role) > -1;
+          return user.roles.indexOf(role) > -1;
         }
       };
-
       user.isAdmin = function() {
-        return this.hasRole(options.adminRoles);
+        return user.hasRole(options.adminRoles);
       };
       return user;
     }
@@ -61,6 +59,7 @@
         return getSession()
           .then(function(user) {
             currentUser = decorateUser(user);
+            return currentUser
           })
           .catch(function(err) {
             $log.debug(err);
@@ -216,12 +215,7 @@
 
 ;(function() {
   'use strict';
-  /**
-   * @ngdoc service
-   * @function
-   * @name EhaUserManagementAuthHttpInterceptor
-   * @module eha.user-management-auth.http-interceptor
-   */
+
   var ngModule = angular.module('eha.user-management-auth.http-interceptor', []);
 
   function EhaUserManagementAuthHttpInterceptor(options, $injector) {
@@ -237,29 +231,6 @@
     var $log = $injector.get('$log');
 
     return {
-      request: function(request) {
-        if (hostMatch(request.url)) {
-          // Grab the service this way to avoid a circular dependency
-          var auth = $injector.get('ehaUserManagementAuthService');
-          // Try to get current user
-          return auth.getCurrentUser()
-            .then(function(user) {
-              if (user && user.bearerToken) {
-                // If user and user.bearerToken are found configure the
-                // Authorization header for this call appropriately
-                request.headers.Authorization = 'Bearer ' + user.bearerToken;
-              }
-              return request;
-            })
-            .catch(function(err) {
-              $log.debug(err);
-              // If we don't find a user then just allow the request to pass
-              // through un modified
-              return request;
-            });
-        }
-        return $q.when(request);
-      },
       responseError: function(rejection) {
         // Check for 401 and hostMatch
         if (rejection.status === 401 && hostMatch(rejection.config.url)) {

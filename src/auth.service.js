@@ -21,34 +21,32 @@
     var eventBus = $rootScope.$new(true);
 
     function getSession() {
-      var sessionUrl = options.url + '/' + options.sessionEndpoint;
-      return $q.when(Restangular
-                      .oneUrl('session', sessionUrl)
-                      .get())
-                      .then(function(session) {
-                        if (session.userCtx) {
-                          return session;
-                        } else {
-                          $q.reject('Session not found');
-                        }
-                      });
+      var sessionUrl = options.sessionEndpoint;
+      return $q
+        .when(Restangular.oneUrl('session', sessionUrl).get())
+        .then(function(session) {
+          var context = session.userCtx
+          if (context) {
+            return context;
+          } else {
+            $q.reject('User context not found');
+          }
+        });
     }
 
     function decorateUser(user) {
       user.hasRole = function(role) {
-        var self = this;
         if (angular.isArray(role)) {
           var matches = role.filter(function(r) {
-            return self.roles.indexOf(r) > -1;
+            return user.roles.indexOf(r) > -1;
           });
           return !!matches.length;
         } else if (angular.isString(role)) {
-          return this.roles.indexOf(role) > -1;
+          return user.roles.indexOf(role) > -1;
         }
       };
-
       user.isAdmin = function() {
-        return this.hasRole(options.adminRoles);
+        return user.hasRole(options.adminRoles);
       };
       return user;
     }
@@ -61,6 +59,7 @@
         return getSession()
           .then(function(user) {
             currentUser = decorateUser(user);
+            return currentUser
           })
           .catch(function(err) {
             $log.debug(err);
