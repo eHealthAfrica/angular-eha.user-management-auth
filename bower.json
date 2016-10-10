@@ -30,8 +30,6 @@
   "dependencies": {
     "restangular": "~1.4.0",
     "lodash": "~3.5.0",
-    "localforage": "~1.2.2",
-    "angular-localForage": "~1.2.2"
   },
   "resolutions": {
     "lodash": "~3.5.0",
