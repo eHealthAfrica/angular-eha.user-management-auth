@@ -21,7 +21,7 @@
     var eventBus = $rootScope.$new(true);
 
     function getSession() {
-      var sessionUrl = options.sessionEndpoint;
+      var sessionUrl = options.url + '/' + options.sessionEndpoint;
       return $q
         .when(Restangular.oneUrl('session', sessionUrl).get())
         .then(function(session) {
