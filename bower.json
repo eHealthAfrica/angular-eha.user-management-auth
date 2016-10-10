@@ -28,11 +28,7 @@
     "tests"
   ],
   "dependencies": {
-    "restangular": "~1.4.0",
-    "lodash": "~3.5.0"
-  },
-  "resolutions": {
-    "lodash": "~3.5.0",
-    "localforage": "~1.2.2"
+    "restangular": "^1.5.2",
+    "lodash": "^4.16.4"
   }
 }

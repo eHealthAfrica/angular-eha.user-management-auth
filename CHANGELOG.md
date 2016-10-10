@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 #### Unreleased - Upcoming
 
+- Update dependencies - lodash and restangular
 - Refactor the options removing the unused ones, and update the doc
 
 #### 1.0.0 - 2016-10-07
