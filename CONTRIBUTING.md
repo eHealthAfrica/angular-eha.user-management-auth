@@ -13,11 +13,11 @@
 
 ```bash
 # Fork the upstream repo on github and pull down your fork
-git clone git@github.com:yourusername/angular-eha.couchdb-auth.git
+git clone git@github.com:yourusername/angular-eha.user-management-auth.git
 # change into project folder
-cd angular-eha.couchdb-auth
+cd angular-eha.user-management-auth
 # Add the upstream as a remote
-git remote add upstream  git@github.com:eHealthAfrica/angular-eha.couchdb-auth.git
+git remote add upstream  git@github.com:eHealthAfrica/angular-eha.user-management-auth.git
 # Install the dev dependencies
 npm install
 ```
