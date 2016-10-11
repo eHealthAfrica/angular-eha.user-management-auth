@@ -4,14 +4,12 @@
   var ngModule = angular
   .module('eha.user-management-auth.auth.service', [
     'restangular',
-    'LocalForageModule'
   ]);
 
   function UserManagementAuthService(options,
                               Restangular,
                               $log,
                               $q,
-                              $localForage,
                               $rootScope) {
 
     var currentUser;
@@ -92,13 +90,11 @@
   }
 
   ngModule.provider('ehaUserManagementAuthService',
-  function ehaUserManagementAuthService($localForageProvider,
+  function ehaUserManagementAuthService(
                                  ehaUserManagementAuthHttpInterceptorProvider,
                                  $httpProvider) {
 
     var options = {
-      localStorageNamespace: 'eha',
-      localStorageStoreName: 'auth',
       adminRoles: ['_admin'],
       sessionEndpoint: '_session'
     };
@@ -139,16 +135,10 @@
     this.config = function(config) {
       options = angular.extend(options, config);
 
-      $localForageProvider.config({
-        name: options.localStorageNamespace,
-        storeName: options.localStorageStoreName
-      });
-
       if (config.interceptor) {
-        ehaUserManagementAuthHttpInterceptorProvider.config({
-          url: config.url,
-          hosts: config.interceptor.hosts
-        });
+        ehaUserManagementAuthHttpInterceptorProvider.config(
+          config.interceptor
+        );
         $httpProvider.interceptors.push('ehaUserManagementAuthHttpInterceptor');
       }
 
@@ -184,7 +174,7 @@
       };
     };
 
-    this.$get = function(Restangular, $log, $q, $localForage, $rootScope) {
+    this.$get = function(Restangular, $log, $q, $rootScope) {
 
       var restangular = Restangular.withConfig(
         function(RestangularConfigurer) {
@@ -200,7 +190,6 @@
                                     restangular,
                                     $log,
                                     $q,
-                                    $localForage,
                                     $rootScope);
     };
 

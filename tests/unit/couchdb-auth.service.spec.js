@@ -7,7 +7,6 @@ describe('eha.user-management-auth.service', function() {
   var $timeout;
   var $httpBackend;
   var $rootScope;
-  var $localForage;
   var $http;
   var instanceVersion = 0;
   var config;
@@ -44,7 +43,6 @@ describe('eha.user-management-auth.service', function() {
                                _$timeout_,
                                _$httpBackend_,
                                _$rootScope_,
-                               _$localForage_,
                                _$http_,
                                _$q_) {
 
@@ -52,7 +50,6 @@ describe('eha.user-management-auth.service', function() {
       $timeout = _$timeout_;
       $httpBackend = _$httpBackend_;
       $rootScope = _$rootScope_;
-      $localForage = _$localForage_;
       $http = _$http_;
       $q = _$q_;
     }));

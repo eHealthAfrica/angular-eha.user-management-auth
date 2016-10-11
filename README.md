@@ -25,14 +25,12 @@ The module can be configured through the
 ```javascript
 app.config(function(ehaUserManagementAuthServiceProvider) {
   ehaUserManagementAuthServiceProvider.config({
-    url: 'http://mycouchdb.com',            // CouchDB/Proxy URL exposing _session endpoints
-    localStorageNamespace: 'mnutrition',    // Namespace for localstorage (default: lf)
-    adminRoles: ['admin'],                  // 'Admin' CouchDB role. (default: `['_admin']`)
+    adminRoles: ['admin'],                  // Admin role. (default: `['_admin']`)
     userRoles: ['data_provider', 'analyst'],// Roles other than admin roles
     sessionEndpoint: '_session',            // Configurable session endpoint (default: `'_session'`)
     interceptor: {                          // Enable HTTP Interceptor (default: false)
-      hosts: [                              // Configure hostnames that should be intercepted
-        'http://mycouchdb.com'
+      hosts: [                              // Configure hostnames that should be intercepted for authentication errors (404)
+        'http://authenticated-endpoint.com'
       ]
     },
     defaultHttpFields: {                    // Passed through to Angular's $http config (default: unset)
