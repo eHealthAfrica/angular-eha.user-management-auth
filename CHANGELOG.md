@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+#### 1.0.2 - 2016-10-11
+
+- I forgot to build the previous version, this updates the build
+
 #### 1.0.1 - 2016-10-11
 
 - Update dependencies - lodash and restangular
