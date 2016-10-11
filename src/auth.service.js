@@ -6,11 +6,14 @@
     'restangular',
   ]);
 
-  function UserManagementAuthService(options,
-                              Restangular,
-                              $log,
-                              $q,
-                              $rootScope) {
+  function UserManagementAuthService(
+    options,
+    Restangular,
+    $log,
+    $q,
+    $rootScope,
+    $window
+    ) {
 
     var currentUser;
 
@@ -68,7 +71,7 @@
 
     function goToExternal(route) {
       return function() {
-        $window.location = route
+        $window.location.assign(route)
       }
     }
 
@@ -174,7 +177,7 @@
       };
     };
 
-    this.$get = function(Restangular, $log, $q, $rootScope) {
+    this.$get = function(Restangular, $log, $q, $rootScope, $window) {
 
       var restangular = Restangular.withConfig(
         function(RestangularConfigurer) {
@@ -186,11 +189,17 @@
         }
       );
 
-      return new UserManagementAuthService(options,
-                                    restangular,
-                                    $log,
-                                    $q,
-                                    $rootScope);
+      /* this triplication of the dependencies is error prone and i
+       * don't see a reason for it. It would be nice to eliminate this
+       * eventually - francesco 2016-10 */
+      return new UserManagementAuthService(
+        options,
+        restangular,
+        $log,
+        $q,
+        $rootScope,
+        $window
+      );
     };
 
   });

@@ -11,6 +11,7 @@ describe('eha.user-management-auth.service', function() {
   var instanceVersion = 0;
   var config;
   var $q;
+  var $window = { location: {} };
 
   var triggerDigests = function() {
     return setInterval(function() {
@@ -22,6 +23,10 @@ describe('eha.user-management-auth.service', function() {
   };
 
   describe('the regular services', function () {
+    beforeEach(module(function ($provide) {
+      $provide.value('$window', $window)
+    }))
+
     beforeEach(module('eha.user-management-auth',
                       function(ehaUserManagementAuthServiceProvider, $provide) {
                         config = {
@@ -39,12 +44,14 @@ describe('eha.user-management-auth.service', function() {
                       })
               );
 
-    beforeEach(inject(function(ehaUserManagementAuthService,
-                               _$timeout_,
-                               _$httpBackend_,
-                               _$rootScope_,
-                               _$http_,
-                               _$q_) {
+    beforeEach(inject(function(
+      ehaUserManagementAuthService,
+      _$timeout_,
+      _$httpBackend_,
+      _$rootScope_,
+      _$http_,
+      _$q_
+    ) {
 
       service = ehaUserManagementAuthService;
       $timeout = _$timeout_;
@@ -72,6 +79,14 @@ describe('eha.user-management-auth.service', function() {
           });
         });
       });
+      describe('logout', function () {
+        it('navigates the user to the user management', function () {
+          $window.location.assign = sinon.spy()
+          service.logout()
+          expect($window.location.assign.calledOnce)
+          expect($window.location.assign.getCall(0).args[0]).to.equal('/logout')
+        })
+      })
     })
   });
   describe('the auth provider', function () {
