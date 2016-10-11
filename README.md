@@ -53,11 +53,12 @@ with locations matching one of the values in `hosts`.
 
 #### `getSession()`
 
-_Promise/A+_ Makes a GET request to the `_session/` endpoint of the CouchDB url provided during configuration. _Returns a promise._
+_Promise/A+_ Makes a GET request to the `_session/` endpoint provided
+during configuration. _Returns a promise._
 
 #### `getCurrentUser()`
 
-_Promise/A+_ Checks the local environment for a user, failing that checks local storage and finally attempts to GET the `_session/` endpoint of the CouchDB url.
+_Promise/A+_ Checks the local environment for a user, failing that checks local storage and finally attempts to GET the `_session/` endpoint.
 
 _Returns a promise_
 
@@ -73,7 +74,7 @@ Event subscription handler
 - `unauthenticated` - fired whenever an unauthenticated user / session attempts to access a resource that requires authentication.
 - `unauthorized` - fired whenever the current user / session is unauthorised to access a resource
 
-### ehaCouchDBAuthServiceProvider
+### ehaUserManagementAuthServiceProvider
 
 The provider exposes some functions suitable to be used as values for
 the `resolve` option of the `when` method of the `$routeProvider`, or
