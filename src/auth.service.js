@@ -21,6 +21,8 @@
     // sub/pub functionality rather than rolling something ourselves
     var eventBus = $rootScope.$new(true);
 
+    var trigger = eventBus.$broadcast.bind(eventBus);
+
     function getSession() {
       var sessionUrl = options.sessionEndpoint;
       return $q
@@ -32,6 +34,10 @@
           } else {
             $q.reject('User context not found');
           }
+        })
+        .catch(function () {
+          trigger('unauthenticated');
+          return $q.reject('unauthenticated');
         });
     }
 
@@ -79,7 +85,7 @@
       getSession: getSession,
       getCurrentUser: getCurrentUser,
       on: eventBus.$on.bind(eventBus),
-      trigger: eventBus.$broadcast.bind(eventBus),
+      trigger: trigger,
       isAuthenticated: function() {
         if (!currentUser) {
           return $q.reject();
@@ -125,13 +131,6 @@
             return $q.reject('unauthorized');
           }
           return user;
-        })
-        .catch(function(err) {
-          if (err === 'unauthorized') {
-            throw err;
-          }
-          ehaUserManagementAuthService.trigger('unauthenticated');
-          return $q.reject('unauthenticated');
         });
     }
 
@@ -162,13 +161,6 @@
 
     this.requireAuthenticatedUser = function(ehaUserManagementAuthService, $q) {
       return ehaUserManagementAuthService.getCurrentUser()
-                .then(function(user) {
-                  return user;
-                })
-                .catch(function(err) {
-                  ehaUserManagementAuthService.trigger('unauthenticated');
-                  return $q.reject('unauthenticated');
-                });
     };
 
     this.requireUserWithRoles = function(roles) {
