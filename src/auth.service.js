@@ -12,7 +12,9 @@
     $log,
     $q,
     $rootScope,
-    $window
+    $window,
+    EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT,
+    EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT
     ) {
 
     var currentUser;
@@ -36,8 +38,8 @@
           }
         })
         .catch(function () {
-          trigger('unauthenticated');
-          return $q.reject('unauthenticated');
+          trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT);
+          return $q.reject(EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT);
         });
     }
 
@@ -55,6 +57,19 @@
       user.isAdmin = function() {
         return user.hasRole(options.adminRoles);
       };
+      // add getters for the known properties of an user. This way the
+      // code trying to access user properties can use a getter and
+      // get an exception when trying to access properties which are
+      // unknown to us
+      [
+        'name',
+        'role'
+      ].forEach(function (prop) {
+        var getterName = prop+'Getter';
+        user[getterName] = function () {
+          return user[prop];
+        };
+      })
       return user;
     }
 
@@ -94,7 +109,18 @@
         }
       },
       login: goToExternal('/login'),
-      logout: goToExternal('/logout')
+      logout: goToExternal('/logout'),
+      unsafeGetCurrentUserSynchronously: function () {
+        // this function was added to integrate more easily with the
+        // call centre, which relies on synchronously fetching the
+        // user within several page controllers. Authentication is
+        // done before the controllers call this function, but this
+        // cannot be guaranteed in the general case, so hopefully this
+        // name should be scary enough for us to gradually stop using
+        // this function in the long term, and migrate to the
+        // asynchronous ones which return promises
+        return currentUser
+      }
     };
   }
 
@@ -127,8 +153,8 @@
       return ehaUserManagementAuthService.getCurrentUser()
         .then(function(user) {
           if (user && !user.isAdmin() && !user.hasRole(roles)) {
-            ehaUserManagementAuthService.trigger('unauthorized');
-            return $q.reject('unauthorized');
+            ehaUserManagementAuthService.trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
+            return $q.reject(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
           }
           return user;
         });
@@ -169,7 +195,15 @@
       };
     };
 
-    this.$get = function(Restangular, $log, $q, $rootScope, $window) {
+    this.$get = function(
+      Restangular,
+      $log,
+      $q,
+      $rootScope,
+      $window,
+      EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT,
+      EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT
+    ) {
 
       var restangular = Restangular.withConfig(
         function(RestangularConfigurer) {
@@ -184,14 +218,48 @@
       /* this triplication of the dependencies is error prone and i
        * don't see a reason for it. It would be nice to eliminate this
        * eventually - francesco 2016-10 */
-      return new UserManagementAuthService(
+      var service = new UserManagementAuthService(
         options,
         restangular,
         $log,
         $q,
         $rootScope,
-        $window
+        $window,
+        EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT,
+        EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT
       );
+
+      function authorisationPolicy (f) {
+        return function (policyArgument) {
+          service
+            .getCurrentUser()
+            .then(function (user) {
+              var authorised = f(user, policyArgument)
+              if (authorised) {
+                return p;
+              } else {
+                service.trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
+                return $q.reject(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
+              }
+            })
+        }
+      }
+
+      /* used in the call centre - francesco 11-2016 */
+      service.requireUserWithAnyRole = authorisationPolicy(function (user, roles) {
+        return roles.forEach(function (authorised, role) {
+          return authorised || user.hasRole(role);
+        }, false);
+      })
+
+      /* used in the call centre - francesco 11-2016 */
+      service.anyRoleExcept = authorisationPolicy(function (user, exclude) {
+        return options.userRoles.forEach(function (authorised, role) {
+          return authorised || (role !== exclude && user.hasRole(role));
+        }, false);
+      })
+
+      return service;
     };
 
   });

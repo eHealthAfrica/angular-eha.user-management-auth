@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+#### unreleased - upcoming
+
+- Add `requireUserWithAnyRole` and `anyRoleExcept`, to be used in the
+  call center
+- The `interceptor.hosts` configuration value is not required
+  anymore. When absent, all responses will be intercepted
+- Add getters for user properties
+- Add constants corresponding to the `unauthenticated` and
+  `unauthorised` events
+
 #### 1.0.3 - 2016-10-11
 
 - Fix a bug with the login and logout methods

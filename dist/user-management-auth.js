@@ -1,3 +1,19 @@
+;(function() {
+  'use strict';
+  var ngModule = angular.module('eha.user-management-auth', [
+    'eha.user-management-auth.http-interceptor',
+    'eha.user-management-auth.auth.service',
+    'eha.user-management-auth.show-for-role.directive',
+    'eha.user-management-auth.show-authenticated.directive'
+  ]);
+
+  // Check for and export to commonjs environment
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ngModule;
+  }
+
+})();
+
 (function() {
   'use strict';
 
@@ -12,7 +28,9 @@
     $log,
     $q,
     $rootScope,
-    $window
+    $window,
+    EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT,
+    EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT
     ) {
 
     var currentUser;
@@ -20,6 +38,8 @@
     // Create a new 'isolate scope' so that we can leverage and wrap angular's
     // sub/pub functionality rather than rolling something ourselves
     var eventBus = $rootScope.$new(true);
+
+    var trigger = eventBus.$broadcast.bind(eventBus);
 
     function getSession() {
       var sessionUrl = options.sessionEndpoint;
@@ -32,6 +52,10 @@
           } else {
             $q.reject('User context not found');
           }
+        })
+        .catch(function () {
+          trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT);
+          return $q.reject(EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT);
         });
     }
 
@@ -49,6 +73,19 @@
       user.isAdmin = function() {
         return user.hasRole(options.adminRoles);
       };
+      // add getters for the known properties of an user. This way the
+      // code trying to access user properties can use a getter and
+      // get an exception when trying to access properties which are
+      // unknown to us
+      [
+        'name',
+        'role'
+      ].forEach(function (prop) {
+        var getterName = prop+'Getter';
+        user[getterName] = function () {
+          return user[prop];
+        };
+      })
       return user;
     }
 
@@ -79,7 +116,7 @@
       getSession: getSession,
       getCurrentUser: getCurrentUser,
       on: eventBus.$on.bind(eventBus),
-      trigger: eventBus.$broadcast.bind(eventBus),
+      trigger: trigger,
       isAuthenticated: function() {
         if (!currentUser) {
           return $q.reject();
@@ -88,7 +125,18 @@
         }
       },
       login: goToExternal('/login'),
-      logout: goToExternal('/logout')
+      logout: goToExternal('/logout'),
+      unsafeGetCurrentUserSynchronously: function () {
+        // this function was added to integrate more easily with the
+        // call centre, which relies on synchronously fetching the
+        // user within several page controllers. Authentication is
+        // done before the controllers call this function, but this
+        // cannot be guaranteed in the general case, so hopefully this
+        // name should be scary enough for us to gradually stop using
+        // this function in the long term, and migrate to the
+        // asynchronous ones which return promises
+        return currentUser
+      }
     };
   }
 
@@ -121,17 +169,10 @@
       return ehaUserManagementAuthService.getCurrentUser()
         .then(function(user) {
           if (user && !user.isAdmin() && !user.hasRole(roles)) {
-            ehaUserManagementAuthService.trigger('unauthorized');
-            return $q.reject('unauthorized');
+            ehaUserManagementAuthService.trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
+            return $q.reject(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
           }
           return user;
-        })
-        .catch(function(err) {
-          if (err === 'unauthorized') {
-            throw err;
-          }
-          ehaUserManagementAuthService.trigger('unauthenticated');
-          return $q.reject('unauthenticated');
         });
     }
 
@@ -162,13 +203,6 @@
 
     this.requireAuthenticatedUser = function(ehaUserManagementAuthService, $q) {
       return ehaUserManagementAuthService.getCurrentUser()
-                .then(function(user) {
-                  return user;
-                })
-                .catch(function(err) {
-                  ehaUserManagementAuthService.trigger('unauthenticated');
-                  return $q.reject('unauthenticated');
-                });
     };
 
     this.requireUserWithRoles = function(roles) {
@@ -177,7 +211,15 @@
       };
     };
 
-    this.$get = ['Restangular', '$log', '$q', '$rootScope', '$window', function(Restangular, $log, $q, $rootScope, $window) {
+    this.$get = ['Restangular', '$log', '$q', '$rootScope', '$window', 'EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT', 'EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT', function(
+      Restangular,
+      $log,
+      $q,
+      $rootScope,
+      $window,
+      EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT,
+      EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT
+    ) {
 
       var restangular = Restangular.withConfig(
         function(RestangularConfigurer) {
@@ -192,14 +234,48 @@
       /* this triplication of the dependencies is error prone and i
        * don't see a reason for it. It would be nice to eliminate this
        * eventually - francesco 2016-10 */
-      return new UserManagementAuthService(
+      var service = new UserManagementAuthService(
         options,
         restangular,
         $log,
         $q,
         $rootScope,
-        $window
+        $window,
+        EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT,
+        EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT
       );
+
+      function authorisationPolicy (f) {
+        return function (policyArgument) {
+          service
+            .getCurrentUser()
+            .then(function (user) {
+              var authorised = f(user, policyArgument)
+              if (authorised) {
+                return p;
+              } else {
+                service.trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
+                return $q.reject(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
+              }
+            })
+        }
+      }
+
+      /* used in the call centre - francesco 11-2016 */
+      service.requireUserWithAnyRole = authorisationPolicy(function (user, roles) {
+        return roles.forEach(function (authorised, role) {
+          return authorised || user.hasRole(role);
+        }, false);
+      })
+
+      /* used in the call centre - francesco 11-2016 */
+      service.anyRoleExcept = authorisationPolicy(function (user, exclude) {
+        return options.userRoles.forEach(function (authorised, role) {
+          return authorised || (role !== exclude && user.hasRole(role));
+        }, false);
+      })
+
+      return service;
     }];
 
   }]);
@@ -219,21 +295,30 @@
   function EhaUserManagementAuthHttpInterceptor(options, $injector) {
 
     function hostMatch(url) {
-      var hostMatches = options.hosts.filter(function(host) {
-        return url.indexOf(host) > -1;
-      });
-      return !!hostMatches.length;
+      var hosts = options.hosts;
+      if (hosts) {
+        var hostMatches = options.hosts.filter(function(host) {
+          return url.indexOf(host) > -1;
+        });
+        return !!hostMatches.length;
+      } else {
+        // we support the case when no hosts are defined. In this
+        // case, all intercepted HTTP responses with a 401 -
+        // unauthorised code will be handled by this interceptor
+        return true;
+      }
     }
 
     var $q = $injector.get('$q');
     var $log = $injector.get('$log');
+    var EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT = $injector.get('EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT');
 
     return {
       responseError: function(rejection) {
         // Check for 401 and hostMatch
         if (rejection.status === 401 && hostMatch(rejection.config.url)) {
           var auth = $injector.get('ehaUserManagementAuthService');
-          auth.trigger('unauthenticated');
+          auth.trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT);
         }
         return $q.reject(rejection);
       }
@@ -343,18 +428,17 @@ angular.module('eha.user-management-auth.show-authenticated.directive', [])
     };
   }]);
 
-;(function() {
-  'use strict';
-  var ngModule = angular.module('eha.user-management-auth', [
-    'eha.user-management-auth.http-interceptor',
-    'eha.user-management-auth.auth.service',
-    'eha.user-management-auth.show-for-role.directive',
-    'eha.user-management-auth.show-authenticated.directive'
-  ]);
-
-  // Check for and export to commonjs environment
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ngModule;
-  }
-
-})();
+// a string like `unauthenticated` will lead to the creation of a
+// constant named `EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT`
+[
+  'unauthenticated',
+  'unauthorised'
+].forEach(function (name) {
+  var upper = name.toUpperCase();
+  // the value doesn't matter really, but having it like the name
+  // might help troubleshooting
+  var constantNameAndValue = 'EHA_USER_MANAGEMENT_AUTH_'+upper+'_EVENT'
+  angular
+    .module('eha.user-management-auth')
+    .constant(constantNameAndValue, constantNameAndValue);
+})

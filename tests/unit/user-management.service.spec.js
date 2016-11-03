@@ -1,6 +1,6 @@
 'use strict'
 
-describe('eha.user-management-auth.service', function() {
+describe('eha.user-management-auth', function() {
 
 
   var service;
@@ -99,5 +99,25 @@ describe('eha.user-management-auth.service', function() {
         localStorageNamespace: 'mnutrition-app'
       })
     }))
+  })
+  describe('the constants', function () {
+    beforeEach(function () {
+      module('eha.user-management-auth')
+    })
+    it(
+      'ehaUserManagementAuthService is provided',
+      inject(function (ehaUserManagementAuthService) {
+        expect(ehaUserManagementAuthService).to.be.defined
+      }))
+    it(
+      'EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT is provided',
+      inject(function (EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT) {
+        expect(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT).to.be.defined
+      }))
+    it(
+      'EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT_EVENT is provided',
+      inject(function (EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT) {
+        expect(EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT).to.be.defined
+      }))
   })
 });
