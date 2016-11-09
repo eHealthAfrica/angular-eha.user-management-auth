@@ -1,5 +1,5 @@
 {
-  "name": "angular-eha.user-management-auth",
+  "name": "angular-eha.ums-auth",
   "version": "1.0.3",
   "description": "user management client for Angular",
   "authors": [
@@ -13,11 +13,11 @@
   "homepage": "http://ehealthafrica.org",
   "keywords": "",
   "main": [
-    "dist/user-management-auth.js"
+    "dist/ums-auth.js"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/eHealthAfrica/angular-eha.user-management-auth.git"
+    "url": "https://github.com/eHealthAfrica/angular-eha.ums-auth.git"
   },
   "license": "Apache-2.0",
   "ignore": [

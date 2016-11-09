@@ -2,19 +2,19 @@
   'use strict';
 
   var ngModule = angular
-  .module('eha.user-management-auth.auth.service', [
+  .module('eha.ums-auth.auth.service', [
     'restangular',
   ]);
 
-  function UserManagementAuthService(
+  function UMSAuthService(
     options,
     Restangular,
     $log,
     $q,
     $rootScope,
     $window,
-    EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT,
-    EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT
+    EHA_UMS_AUTH_UNAUTHORISED_EVENT,
+    EHA_UMS_AUTH_UNAUTHENTICATED_EVENT
     ) {
 
     var currentUser;
@@ -38,8 +38,8 @@
           }
         })
         .catch(function () {
-          trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT);
-          return $q.reject(EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT);
+          trigger(EHA_UMS_AUTH_UNAUTHENTICATED_EVENT);
+          return $q.reject(EHA_UMS_AUTH_UNAUTHENTICATED_EVENT);
         });
     }
 
@@ -124,9 +124,9 @@
     };
   }
 
-  ngModule.provider('ehaUserManagementAuthService',
-  function ehaUserManagementAuthService(
-                                 ehaUserManagementAuthHttpInterceptorProvider,
+  ngModule.provider('ehaUMSAuthService',
+  function ehaUMSAuthService(
+                                 ehaUMSAuthHttpInterceptorProvider,
                                  $httpProvider) {
 
     var options = {
@@ -149,12 +149,12 @@
       return words.join('');
     }
 
-    function requireUserWithRoles(ehaUserManagementAuthService, $q, roles) {
-      return ehaUserManagementAuthService.getCurrentUser()
+    function requireUserWithRoles(ehaUMSAuthService, $q, roles) {
+      return ehaUMSAuthService.getCurrentUser()
         .then(function(user) {
           if (user && !user.isAdmin() && !user.hasRole(roles)) {
-            ehaUserManagementAuthService.trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
-            return $q.reject(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
+            ehaUMSAuthService.trigger(EHA_UMS_AUTH_UNAUTHORISED_EVENT);
+            return $q.reject(EHA_UMS_AUTH_UNAUTHORISED_EVENT);
           }
           return user;
         });
@@ -164,34 +164,34 @@
       options = angular.extend(options, config);
 
       if (config.interceptor) {
-        ehaUserManagementAuthHttpInterceptorProvider.config(
+        ehaUMSAuthHttpInterceptorProvider.config(
           config.interceptor
         );
-        $httpProvider.interceptors.push('ehaUserManagementAuthHttpInterceptor');
+        $httpProvider.interceptors.push('ehaUMSAuthHttpInterceptor');
       }
 
       if (config.userRoles) {
         config.userRoles.forEach(function(role) {
           var functionName = 'require' + camelCase(role) + 'User';
-          this[functionName] = function(ehaUserManagementAuthService, $q) {
-            return requireUserWithRoles(ehaUserManagementAuthService, $q, [role]);
+          this[functionName] = function(ehaUMSAuthService, $q) {
+            return requireUserWithRoles(ehaUMSAuthService, $q, [role]);
           };
         }.bind(this));
       }
     };
 
-    this.requireAdminUser = function(ehaUserManagementAuthService, $q) {
+    this.requireAdminUser = function(ehaUMSAuthService, $q) {
       return requireUserWithRoles(
-        ehaUserManagementAuthService, $q, options.adminRoles);
+        ehaUMSAuthService, $q, options.adminRoles);
     };
 
-    this.requireAuthenticatedUser = function(ehaUserManagementAuthService, $q) {
-      return ehaUserManagementAuthService.getCurrentUser()
+    this.requireAuthenticatedUser = function(ehaUMSAuthService, $q) {
+      return ehaUMSAuthService.getCurrentUser()
     };
 
     this.requireUserWithRoles = function(roles) {
-      return function(ehaUserManagementAuthService, $q) {
-        return requireUserWithRoles(ehaUserManagementAuthService, $q, roles);
+      return function(ehaUMSAuthService, $q) {
+        return requireUserWithRoles(ehaUMSAuthService, $q, roles);
       };
     };
 
@@ -201,8 +201,8 @@
       $q,
       $rootScope,
       $window,
-      EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT,
-      EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT
+      EHA_UMS_AUTH_UNAUTHORISED_EVENT,
+      EHA_UMS_AUTH_UNAUTHENTICATED_EVENT
     ) {
 
       var restangular = Restangular.withConfig(
@@ -218,15 +218,15 @@
       /* this triplication of the dependencies is error prone and i
        * don't see a reason for it. It would be nice to eliminate this
        * eventually - francesco 2016-10 */
-      var service = new UserManagementAuthService(
+      var service = new UMSAuthService(
         options,
         restangular,
         $log,
         $q,
         $rootScope,
         $window,
-        EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT,
-        EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT
+        EHA_UMS_AUTH_UNAUTHORISED_EVENT,
+        EHA_UMS_AUTH_UNAUTHENTICATED_EVENT
       );
 
       function authorisationPolicy (f) {
@@ -238,8 +238,8 @@
               if (authorised) {
                 return p;
               } else {
-                service.trigger(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
-                return $q.reject(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT);
+                service.trigger(EHA_UMS_AUTH_UNAUTHORISED_EVENT);
+                return $q.reject(EHA_UMS_AUTH_UNAUTHORISED_EVENT);
               }
             })
         }

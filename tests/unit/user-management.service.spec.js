@@ -1,6 +1,6 @@
 'use strict'
 
-describe('eha.user-management-auth', function() {
+describe('eha.ums-auth', function() {
 
 
   var service;
@@ -27,8 +27,8 @@ describe('eha.user-management-auth', function() {
       $provide.value('$window', $window)
     }))
 
-    beforeEach(module('eha.user-management-auth',
-                      function(ehaUserManagementAuthServiceProvider, $provide) {
+    beforeEach(module('eha.ums-auth',
+                      function(ehaUMSAuthServiceProvider, $provide) {
                         config = {
                           auth: {
                             api: {
@@ -36,7 +36,7 @@ describe('eha.user-management-auth', function() {
                             }
                           }
                         };
-                        ehaUserManagementAuthServiceProvider
+                        ehaUMSAuthServiceProvider
                           .config({
                             url: config.auth.api.url,
                             localStorageNamespace: 'mnutrition-app',
@@ -45,7 +45,7 @@ describe('eha.user-management-auth', function() {
               );
 
     beforeEach(inject(function(
-      ehaUserManagementAuthService,
+      ehaUMSAuthService,
       _$timeout_,
       _$httpBackend_,
       _$rootScope_,
@@ -53,7 +53,7 @@ describe('eha.user-management-auth', function() {
       _$q_
     ) {
 
-      service = ehaUserManagementAuthService;
+      service = ehaUMSAuthService;
       $timeout = _$timeout_;
       $httpBackend = _$httpBackend_;
       $rootScope = _$rootScope_;
@@ -90,11 +90,11 @@ describe('eha.user-management-auth', function() {
     })
   });
   describe('the auth provider', function () {
-    it('is defined', module(function (ehaUserManagementAuthServiceProvider) {
-      expect(ehaUserManagementAuthServiceProvider).to.be.defined
+    it('is defined', module(function (ehaUMSAuthServiceProvider) {
+      expect(ehaUMSAuthServiceProvider).to.be.defined
     }))
-    it('can be configured', module(function (ehaUserManagementAuthServiceProvider) {
-      ehaUserManagementAuthServiceProvider.config({
+    it('can be configured', module(function (ehaUMSAuthServiceProvider) {
+      ehaUMSAuthServiceProvider.config({
         url: 'http://localhost:5000',
         localStorageNamespace: 'mnutrition-app'
       })
@@ -102,22 +102,22 @@ describe('eha.user-management-auth', function() {
   })
   describe('the constants', function () {
     beforeEach(function () {
-      module('eha.user-management-auth')
+      module('eha.ums-auth')
     })
     it(
-      'ehaUserManagementAuthService is provided',
-      inject(function (ehaUserManagementAuthService) {
-        expect(ehaUserManagementAuthService).to.be.defined
+      'ehaUMSAuthService is provided',
+      inject(function (ehaUMSAuthService) {
+        expect(ehaUMSAuthService).to.be.defined
       }))
     it(
-      'EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT is provided',
-      inject(function (EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT) {
-        expect(EHA_USER_MANAGEMENT_AUTH_UNAUTHORISED_EVENT).to.be.defined
+      'EHA_UMS_AUTH_UNAUTHORISED_EVENT is provided',
+      inject(function (EHA_UMS_AUTH_UNAUTHORISED_EVENT) {
+        expect(EHA_UMS_AUTH_UNAUTHORISED_EVENT).to.be.defined
       }))
     it(
-      'EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT_EVENT is provided',
-      inject(function (EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT) {
-        expect(EHA_USER_MANAGEMENT_AUTH_UNAUTHENTICATED_EVENT).to.be.defined
+      'EHA_UMS_AUTH_UNAUTHENTICATED_EVENT_EVENT is provided',
+      inject(function (EHA_UMS_AUTH_UNAUTHENTICATED_EVENT) {
+        expect(EHA_UMS_AUTH_UNAUTHENTICATED_EVENT).to.be.defined
       }))
   })
 });

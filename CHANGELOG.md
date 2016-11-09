@@ -6,6 +6,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 #### unreleased - upcoming
 
+##### Breaking
+
+rename "User Management" with "UMS" everywhere. To migrate:
+- Rename EHA_USER_MANAGEMENT_AUTH... constants to EHA_UMS_AUTH...
+- Rename ehaUserManagementAuth... services to ehaUMSAuth...
+- Rename the module name from `eha.user-management-auth` to `eha.ums-auth`
+- Point to the new repository
+
+##### New
+
 - Add `requireUserWithAnyRole` and `anyRoleExcept`, to be used in the
   call center
 - The `interceptor.hosts` configuration value is not required

@@ -1,5 +1,5 @@
-angular.module('eha.user-management-auth.show-authenticated.directive', [])
-  .directive('ehaShowAuthenticated', function(ehaUserManagementAuthService, $animate) {
+angular.module('eha.ums-auth.show-authenticated.directive', [])
+  .directive('ehaShowAuthenticated', function(ehaUMSAuthService, $animate) {
     var NG_HIDE_CLASS = 'ng-hide';
     var NG_HIDE_IN_PROGRESS_CLASS = 'ng-hide-animate';
     return {
@@ -9,7 +9,7 @@ angular.module('eha.user-management-auth.show-authenticated.directive', [])
         element.addClass('ng-hide');
 
         function checkStatus() {
-          ehaUserManagementAuthService.isAuthenticated()
+          ehaUMSAuthService.isAuthenticated()
             .then(function() {
               $animate.removeClass(element, NG_HIDE_CLASS, {
                 tempClasses: NG_HIDE_IN_PROGRESS_CLASS
@@ -24,7 +24,7 @@ angular.module('eha.user-management-auth.show-authenticated.directive', [])
 
         checkStatus();
 
-        ehaUserManagementAuthService.on('authenticationStateChange', checkStatus);
+        ehaUMSAuthService.on('authenticationStateChange', checkStatus);
       }
     };
   });
