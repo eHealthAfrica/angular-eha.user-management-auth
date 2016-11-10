@@ -2,127 +2,9 @@
   'use strict';
 
   var ngModule = angular
-  .module('eha.ums-auth.auth.service', [
-    'restangular',
-  ]);
-
-  function UMSAuthService(
-    options,
-    Restangular,
-    $log,
-    $q,
-    $rootScope,
-    $window,
-    EHA_UMS_AUTH_UNAUTHORISED_EVENT,
-    EHA_UMS_AUTH_UNAUTHENTICATED_EVENT
-    ) {
-
-    var currentUser;
-
-    // Create a new 'isolate scope' so that we can leverage and wrap angular's
-    // sub/pub functionality rather than rolling something ourselves
-    var eventBus = $rootScope.$new(true);
-
-    var trigger = eventBus.$broadcast.bind(eventBus);
-
-    function getSession() {
-      var sessionUrl = options.sessionEndpoint;
-      return $q
-        .when(Restangular.oneUrl('session', sessionUrl).get())
-        .then(function(session) {
-          var context = session.userCtx
-          if (context) {
-            return context;
-          } else {
-            $q.reject('User context not found');
-          }
-        })
-        .catch(function () {
-          trigger(EHA_UMS_AUTH_UNAUTHENTICATED_EVENT);
-          return $q.reject(EHA_UMS_AUTH_UNAUTHENTICATED_EVENT);
-        });
-    }
-
-    function decorateUser(user) {
-      user.hasRole = function(role) {
-        if (angular.isArray(role)) {
-          var matches = role.filter(function(r) {
-            return user.roles.indexOf(r) > -1;
-          });
-          return !!matches.length;
-        } else if (angular.isString(role)) {
-          return user.roles.indexOf(role) > -1;
-        }
-      };
-      user.isAdmin = function() {
-        return user.hasRole(options.adminRoles);
-      };
-      // add getters for the known properties of an user. This way the
-      // code trying to access user properties can use a getter and
-      // get an exception when trying to access properties which are
-      // unknown to us
-      [
-        'name',
-        'role'
-      ].forEach(function (prop) {
-        var getterName = prop+'Getter';
-        user[getterName] = function () {
-          return user[prop];
-        };
-      })
-      return user;
-    }
-
-    function getCurrentUser() {
-
-      if (currentUser) {
-        return $q.when(currentUser);
-      } else {
-        return getSession()
-          .then(function(user) {
-            currentUser = decorateUser(user);
-            return currentUser
-          })
-          .catch(function(err) {
-            $log.debug(err);
-            return $q.reject(err);
-          });
-      }
-    }
-
-    function goToExternal(route) {
-      return function() {
-        $window.location.assign(route)
-      }
-    }
-
-    return {
-      getSession: getSession,
-      getCurrentUser: getCurrentUser,
-      on: eventBus.$on.bind(eventBus),
-      trigger: trigger,
-      isAuthenticated: function() {
-        if (!currentUser) {
-          return $q.reject();
-        } else {
-          return getSession();
-        }
-      },
-      login: goToExternal('/login'),
-      logout: goToExternal('/logout'),
-      unsafeGetCurrentUserSynchronously: function () {
-        // this function was added to integrate more easily with the
-        // call centre, which relies on synchronously fetching the
-        // user within several page controllers. Authentication is
-        // done before the controllers call this function, but this
-        // cannot be guaranteed in the general case, so hopefully this
-        // name should be scary enough for us to gradually stop using
-        // this function in the long term, and migrate to the
-        // asynchronous ones which return promises
-        return currentUser
-      }
-    };
-  }
+        .module('eha.ums-auth.auth.service', [
+          'restangular',
+        ]);
 
   ngModule.provider('ehaUMSAuthService', function (
     ehaUMSAuthHttpInterceptorProvider,
@@ -215,19 +97,111 @@
         }
       );
 
-      /* this triplication of the dependencies is error prone and i
-       * don't see a reason for it. It would be nice to eliminate this
-       * eventually - francesco 2016-10 */
-      var service = new UMSAuthService(
-        options,
-        restangular,
-        $log,
-        $q,
-        $rootScope,
-        $window,
-        EHA_UMS_AUTH_UNAUTHORISED_EVENT,
-        EHA_UMS_AUTH_UNAUTHENTICATED_EVENT
-      );
+      var currentUser;
+
+      // Create a new 'isolate scope' so that we can leverage and wrap angular's
+      // sub/pub functionality rather than rolling something ourselves
+      var eventBus = $rootScope.$new(true);
+
+      var trigger = eventBus.$broadcast.bind(eventBus);
+
+      function getSession() {
+        var sessionUrl = options.sessionEndpoint;
+        return $q
+          .when(Restangular.oneUrl('session', sessionUrl).get())
+          .then(function(session) {
+            var context = session.userCtx
+            if (context) {
+              return context;
+            } else {
+              $q.reject('User context not found');
+            }
+          })
+          .catch(function () {
+            trigger(EHA_UMS_AUTH_UNAUTHENTICATED_EVENT);
+            return $q.reject(EHA_UMS_AUTH_UNAUTHENTICATED_EVENT);
+          });
+      }
+
+      function decorateUser(user) {
+        user.hasRole = function(role) {
+          if (angular.isArray(role)) {
+            var matches = role.filter(function(r) {
+              return user.roles.indexOf(r) > -1;
+            });
+            return !!matches.length;
+          } else if (angular.isString(role)) {
+            return user.roles.indexOf(role) > -1;
+          }
+        };
+        user.isAdmin = function() {
+          return user.hasRole(options.adminRoles);
+        };
+        // add getters for the known properties of an user. This way the
+        // code trying to access user properties can use a getter and
+        // get an exception when trying to access properties which are
+        // unknown to us
+        [
+          'name',
+          'role'
+        ].forEach(function (prop) {
+          var getterName = prop+'Getter';
+          user[getterName] = function () {
+            return user[prop];
+          };
+        })
+        return user;
+      }
+
+      function getCurrentUser() {
+
+        if (currentUser) {
+          return $q.when(currentUser);
+        } else {
+          return getSession()
+            .then(function(user) {
+              currentUser = decorateUser(user);
+              return currentUser
+            })
+            .catch(function(err) {
+              $log.debug(err);
+              return $q.reject(err);
+            });
+        }
+      }
+
+      function goToExternal(route) {
+        return function() {
+          $window.location.assign(route)
+        }
+      }
+
+      var service = {
+        getSession: getSession,
+        getCurrentUser: getCurrentUser,
+        on: eventBus.$on.bind(eventBus),
+        trigger: trigger,
+        isAuthenticated: function() {
+          if (!currentUser) {
+            return $q.reject();
+          } else {
+            return getSession();
+          }
+        },
+        login: goToExternal('/login'),
+        logout: goToExternal('/logout'),
+        unsafeGetCurrentUserSynchronously: function () {
+          // this function was added to integrate more easily with the
+          // call centre, which relies on synchronously fetching the
+          // user within several page controllers. Authentication is
+          // done before the controllers call this function, but this
+          // cannot be guaranteed in the general case, so hopefully this
+          // name should be scary enough for us to gradually stop using
+          // this function in the long term, and migrate to the
+          // asynchronous ones which return promises
+          return currentUser
+        }
+      };
 
       function authorisationPolicy (f) {
         return function (policyArgument) {
