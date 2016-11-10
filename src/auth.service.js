@@ -124,10 +124,10 @@
     };
   }
 
-  ngModule.provider('ehaUMSAuthService',
-  function ehaUMSAuthService(
-                                 ehaUMSAuthHttpInterceptorProvider,
-                                 $httpProvider) {
+  ngModule.provider('ehaUMSAuthService', function (
+    ehaUMSAuthHttpInterceptorProvider,
+    $httpProvider
+  ) {
 
     var options = {
       adminRoles: ['_admin'],
@@ -231,12 +231,12 @@
 
       function authorisationPolicy (f) {
         return function (policyArgument) {
-          service
+          return service
             .getCurrentUser()
             .then(function (user) {
               var authorised = f(user, policyArgument)
               if (authorised) {
-                return p;
+                return true;
               } else {
                 service.trigger(EHA_UMS_AUTH_UNAUTHORISED_EVENT);
                 return $q.reject(EHA_UMS_AUTH_UNAUTHORISED_EVENT);
@@ -247,14 +247,14 @@
 
       /* used in the call centre - francesco 11-2016 */
       service.requireUserWithAnyRole = authorisationPolicy(function (user, roles) {
-        return roles.forEach(function (authorised, role) {
+        return roles.reduce(function (authorised, role) {
           return authorised || user.hasRole(role);
         }, false);
       })
 
       /* used in the call centre - francesco 11-2016 */
       service.anyRoleExcept = authorisationPolicy(function (user, exclude) {
-        return options.userRoles.forEach(function (authorised, role) {
+        return options.userRoles.reduce(function (authorised, role) {
           return authorised || (role !== exclude && user.hasRole(role));
         }, false);
       })

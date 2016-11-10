@@ -24,7 +24,7 @@ module.exports = function(config) {
       'bower_components/angular-localForage/dist/angular-localForage.js',
       'src/index.js',
       'src/**/*.js',
-      'tests/**/*.spec.js',
+      'tests/**/*.js',
       '.tmp/templates.js'
     ],
 
