@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
-#### unreleased - upcoming
+#### 2.0.0 - 2016-11-10
 
 ##### Breaking
 
@@ -23,6 +23,10 @@ rename "User Management" with "UMS" everywhere. To migrate:
 - Add getters for user properties
 - Add constants corresponding to the `unauthenticated` and
   `unauthorised` events
+
+##### Internal
+
+- Refactor the auth service removing the triplication of dependencies
 
 #### 1.0.3 - 2016-10-11
 
