@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+#### 2.0.0 - 2016-11-10
+
+##### Breaking
+
+rename "User Management" with "UMS" everywhere. To migrate:
+- Rename EHA_USER_MANAGEMENT_AUTH... constants to EHA_UMS_AUTH...
+- Rename ehaUserManagementAuth... services to ehaUMSAuth...
+- Rename the module name from `eha.user-management-auth` to `eha.ums-auth`
+- Point to the new repository
+
+##### New
+
+- Add `requireUserWithAnyRole` and `anyRoleExcept`, to be used in the
+  call center
+- The `interceptor.hosts` configuration value is not required
+  anymore. When absent, all responses will be intercepted
+- Add getters for user properties
+- Add constants corresponding to the `unauthenticated` and
+  `unauthorised` events
+
+##### Internal
+
+- Refactor the auth service removing the triplication of dependencies
+
 #### 1.0.3 - 2016-10-11
 
 - Fix a bug with the login and logout methods

@@ -18,24 +18,25 @@ module.exports = function(grunt) {
         ],
         dest: 'dist/',
         rename: function(dest, src) {
-          return dest + src.replace('scripts','user-management-auth');
+          return dest + src.replace('scripts','ums-auth');
         }
       }
     },
     concat: {
       scripts: {
         src: [
+          'src/index.js',
           'src/auth.service.js',
           'src/http-interceptor.js',
           'src/show-for-role.directive.js',
           'src/show-authenticated.directive.js',
-          'src/index.js'
+          'src/constants.js'
         ],
         dest: '.tmp/scripts.js',
         options: {
           process: function(src, path) {
             // Remove templates dependency from non-templates version if exists
-            return src.replace(/,\n    'eha\.user-management-auth\.template'/, '');
+            return src.replace(/,\n    'eha\.ums-auth\.template'/, '');
           }
         }
       },
@@ -68,8 +69,8 @@ module.exports = function(grunt) {
     uglify: {
       dist: {
         files: {
-          'dist/user-management-auth.template.min.js': ['.tmp/scripts.template.js'],
-          'dist/user-management-auth.min.js': ['.tmp/scripts.js']
+          'dist/ums-auth.template.min.js': ['.tmp/scripts.template.js'],
+          'dist/ums-auth.min.js': ['.tmp/scripts.js']
         }
       }
     },
@@ -77,7 +78,7 @@ module.exports = function(grunt) {
       dist: {
         src: ['src/**/*.tpl.html'],
         dest: '.tmp/template.js',
-        module: 'eha.user-management-auth.template',
+        module: 'eha.ums-auth.template',
         options: {
           rename: function(moduleName) {
             var parts = moduleName.split('/');

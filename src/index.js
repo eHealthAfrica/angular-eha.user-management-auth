@@ -1,10 +1,10 @@
 ;(function() {
   'use strict';
-  var ngModule = angular.module('eha.user-management-auth', [
-    'eha.user-management-auth.http-interceptor',
-    'eha.user-management-auth.auth.service',
-    'eha.user-management-auth.show-for-role.directive',
-    'eha.user-management-auth.show-authenticated.directive'
+  var ngModule = angular.module('eha.ums-auth', [
+    'eha.ums-auth.http-interceptor',
+    'eha.ums-auth.auth.service',
+    'eha.ums-auth.show-for-role.directive',
+    'eha.ums-auth.show-authenticated.directive'
   ]);
 
   // Check for and export to commonjs environment

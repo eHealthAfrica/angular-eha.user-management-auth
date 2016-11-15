@@ -1,5 +1,5 @@
-angular.module('eha.user-management-auth.show-for-role.directive', [])
-  .directive('ehaShowForRole', function(ehaUserManagementAuthService,
+angular.module('eha.ums-auth.show-for-role.directive', [])
+  .directive('ehaShowForRole', function(ehaUMSAuthService,
                                         $animate,
                                         $parse,
                                         $q,
@@ -12,7 +12,7 @@ angular.module('eha.user-management-auth.show-for-role.directive', [])
       link: function(scope, element, attributes) {
 
         function checkRoles(requiredRoles) {
-          ehaUserManagementAuthService.getCurrentUser()
+          ehaUMSAuthService.getCurrentUser()
           .then(function(user) {
             if (user && (user.hasRole(requiredRoles) || user.isAdmin())) {
               $animate.removeClass(element, NG_HIDE_CLASS, {
@@ -44,7 +44,7 @@ angular.module('eha.user-management-auth.show-for-role.directive', [])
         }
 
         checkRoles(requiredRoles);
-        ehaUserManagementAuthService.on('authenticationStateChange', function() {
+        ehaUMSAuthService.on('authenticationStateChange', function() {
           checkRoles(requiredRoles);
         });
       }

@@ -1,8 +1,8 @@
 {
-  "name": "angular-eha.user-management-auth",
+  "name": "angular-eha.ums-auth",
   "description": "CouchDB auth wrapper",
   "main": [
-    "dist/user-management-auth.js"
+    "dist/ums-auth.js"
   ],
   "scripts": {
     "build": "grunt build",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/eHealthAfrica/angular-eha.user-management-auth.git"
+    "url": "https://github.com/eHealthAfrica/angular-eha.ums-auth.git"
   },
   "author": "Matt Richards <matt@lucidmoon.co.uk>",
   "license": "Apache-2.0",

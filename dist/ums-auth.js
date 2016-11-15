@@ -1,3 +1,19 @@
+;(function() {
+  'use strict';
+  var ngModule = angular.module('eha.ums-auth', [
+    'eha.ums-auth.http-interceptor',
+    'eha.ums-auth.auth.service',
+    'eha.ums-auth.show-for-role.directive',
+    'eha.ums-auth.show-authenticated.directive'
+  ]);
+
+  // Check for and export to commonjs environment
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ngModule;
+  }
+
+})();
+
 (function() {
   'use strict';
 
@@ -6,7 +22,7 @@
           'restangular',
         ]);
 
-  ngModule.provider('ehaUMSAuthService', function (
+  ngModule.provider('ehaUMSAuthService', ['ehaUMSAuthHttpInterceptorProvider', '$httpProvider', function (
     ehaUMSAuthHttpInterceptorProvider,
     $httpProvider
   ) {
@@ -77,7 +93,7 @@
       };
     };
 
-    this.$get = function(
+    this.$get = ['Restangular', '$log', '$q', '$rootScope', '$window', 'EHA_UMS_AUTH_UNAUTHORISED_EVENT', 'EHA_UMS_AUTH_UNAUTHENTICATED_EVENT', function(
       Restangular,
       $log,
       $q,
@@ -234,8 +250,64 @@
       })
 
       return service;
+    }];
+
+  }]);
+
+  // Check for and export to commonjs environment
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ngModule;
+  }
+
+})();
+
+;(function() {
+  'use strict';
+
+  var ngModule = angular.module('eha.ums-auth.http-interceptor', []);
+
+  function EhaUMSAuthHttpInterceptor(options, $injector) {
+
+    function hostMatch(url) {
+      var hosts = options.hosts;
+      if (hosts) {
+        var hostMatches = options.hosts.filter(function(host) {
+          return url.indexOf(host) > -1;
+        });
+        return !!hostMatches.length;
+      } else {
+        // we support the case when no hosts are defined. In this
+        // case, all intercepted HTTP responses with a 401 -
+        // unauthorised code will be handled by this interceptor
+        return true;
+      }
+    }
+
+    var $q = $injector.get('$q');
+    var $log = $injector.get('$log');
+    var EHA_UMS_AUTH_UNAUTHENTICATED_EVENT = $injector.get('EHA_UMS_AUTH_UNAUTHENTICATED_EVENT');
+
+    return {
+      responseError: function(rejection) {
+        // Check for 401 and hostMatch
+        if (rejection.status === 401 && hostMatch(rejection.config.url)) {
+          var auth = $injector.get('ehaUMSAuthService');
+          auth.trigger(EHA_UMS_AUTH_UNAUTHENTICATED_EVENT);
+        }
+        return $q.reject(rejection);
+      }
+    };
+  }
+
+  ngModule.provider('ehaUMSAuthHttpInterceptor', function() {
+    var options = {};
+    this.config = function(config) {
+      options = config;
     };
 
+    this.$get = ['$injector', function($injector) {
+      return new EhaUMSAuthHttpInterceptor(options, $injector);
+    }];
   });
 
   // Check for and export to commonjs environment
@@ -244,3 +316,103 @@
   }
 
 })();
+
+angular.module('eha.ums-auth.show-for-role.directive', [])
+  .directive('ehaShowForRole', ['ehaUMSAuthService', '$animate', '$parse', '$q', '$log', function(ehaUMSAuthService,
+                                        $animate,
+                                        $parse,
+                                        $q,
+                                        $log) {
+    var NG_HIDE_CLASS = 'ng-hide';
+    var NG_HIDE_IN_PROGRESS_CLASS = 'ng-hide-animate';
+
+    return {
+      restrict: 'A',
+      link: function(scope, element, attributes) {
+
+        function checkRoles(requiredRoles) {
+          ehaUMSAuthService.getCurrentUser()
+          .then(function(user) {
+            if (user && (user.hasRole(requiredRoles) || user.isAdmin())) {
+              $animate.removeClass(element, NG_HIDE_CLASS, {
+                tempClasses: NG_HIDE_IN_PROGRESS_CLASS
+              });
+              return true;
+            }
+            return $q.reject('Role not found');
+          })
+          .catch(function(err) {
+            $log.debug(err);
+            $animate.addClass(element, NG_HIDE_CLASS, {
+              tempClasses: NG_HIDE_IN_PROGRESS_CLASS
+            });
+          });
+        }
+
+        // Hide by default
+        element.addClass('ng-hide');
+
+        var attr = $parse(attributes.ehaShowForRole)(scope);
+        var requiredRoles;
+        if (angular.isArray(attr)) {
+          requiredRoles = attr;
+        } else if (angular.isString(attr)) {
+          requiredRoles = [attr];
+        } else {
+          throw Error('You must pass a string or an array of strings');
+        }
+
+        checkRoles(requiredRoles);
+        ehaUMSAuthService.on('authenticationStateChange', function() {
+          checkRoles(requiredRoles);
+        });
+      }
+    };
+
+  }]);
+
+angular.module('eha.ums-auth.show-authenticated.directive', [])
+  .directive('ehaShowAuthenticated', ['ehaUMSAuthService', '$animate', function(ehaUMSAuthService, $animate) {
+    var NG_HIDE_CLASS = 'ng-hide';
+    var NG_HIDE_IN_PROGRESS_CLASS = 'ng-hide-animate';
+    return {
+      restrict: 'A',
+      link: function(scope, element) {
+        // Hide by default
+        element.addClass('ng-hide');
+
+        function checkStatus() {
+          ehaUMSAuthService.isAuthenticated()
+            .then(function() {
+              $animate.removeClass(element, NG_HIDE_CLASS, {
+                tempClasses: NG_HIDE_IN_PROGRESS_CLASS
+              });
+            })
+            .catch(function() {
+              $animate.addClass(element, NG_HIDE_CLASS, {
+                tempClasses: NG_HIDE_IN_PROGRESS_CLASS
+              });
+            });
+        }
+
+        checkStatus();
+
+        ehaUMSAuthService.on('authenticationStateChange', checkStatus);
+      }
+    };
+  }]);
+
+// a string like `unauthenticated` will lead to the creation of a
+// constant named `EHA_UMS_AUTH_UNAUTHENTICATED_EVENT`
+[
+  'unauthenticated',
+  'unauthorised'
+].forEach(function (name) {
+  var upper = name.toUpperCase();
+  // the value doesn't matter really, but having it like the name
+  // might help troubleshooting
+  var constantNameAndValue = 'EHA_UMS_AUTH_'+upper+'_EVENT'
+  angular
+    .module('eha.ums-auth')
+    .constant(constantNameAndValue, constantNameAndValue);
+})
