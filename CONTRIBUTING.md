@@ -8,23 +8,11 @@
 - grunt-cli (0.1.7)
 - grunt (0.4.5)
 
-
 ## Installation
 
 ```bash
-# Fork the upstream repo on github and pull down your fork
-git clone git@github.com:yourusername/angular-eha.user-management-auth.git
-# change into project folder
-cd angular-eha.user-management-auth
-# Add the upstream as a remote
-git remote add upstream  git@github.com:eHealthAfrica/angular-eha.user-management-auth.git
-# Install the dev dependencies
 npm install
 ```
-
-## Docs
-
-Code should be documented following the guidelines set out by [jsdoc](http://usejsdoc.org/) and [ngdoc](https://github.com/angular/angular.js/wiki/Writing-AngularJS-Documentation). We can then leverage [Dgeni](http://github.com/angular/dgeni) or something simlary to generate documentation in any format we like.
 
 ## Test Suite
 
@@ -70,10 +58,3 @@ If you need to override the default template, simply replace what's already in t
     <button>I'm a button!</button>
 </script>
 ```
-
-## Release Process
-
-We use [semantic-release][] to automate our releases. Just ensure your commit message conforms to the [AngularJS conventions][] and your all set!
-
-[semantic-release]: https://github.com/semantic-release/semantic-release
-[angularjs conventions]: https://github.com/ajoslin/conventional-changelog/blob/master/conventions/angular.md

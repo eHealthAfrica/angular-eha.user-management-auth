@@ -1,38 +1,35 @@
-# angular-eha.user-management-auth
+# angular-eha.ums-auth
 
-[![Build Status](https://travis-ci.org/eHealthAfrica/angular-eha.user-management-auth.svg?&branch=master)](https://travis-ci.org/eHealthAfrica/angular-eha.user-management-auth)
+[![Build Status](https://travis-ci.org/eHealthAfrica/angular-eha.ums-auth.svg?&branch=master)](https://travis-ci.org/eHealthAfrica/angular-eha.ums-auth)
 
-Angular client module for eHealth's User Management Service
+Angular client module for eHealth's User Management Service (UMS)
 
 ## Installation
 
 Install version 1.0.0 with Bower:
 
-    bower install --save https://github.com/eHealthAfrica/angular-eha.user-management-auth#1.0.0
+    bower install --save https://github.com/eHealthAfrica/angular-eha.ums-auth#1.0.0
+
+Please make sure to use the latest version if possible
 
 ## Usage
 
 If you're using wiredep, then all you need to do is add
-`eha.user-management-auth` as an angular module dependency somewhere
+`eha.ums-auth` as an angular module dependency somewhere
 sensible in your app. In the absense of wiredep, you'll need to
-manually bundle `dist/user-management-auth.js`.
+manually bundle `dist/ums-auth.js`.
 
 ### Configuration
 
 The module can be configured through the
-`ehaUserManagementAuthServiceProvider` via a `config` block:
+`ehaUMSAuthServiceProvider` via a `config` block:
 
 ```javascript
-app.config(function(ehaUserManagementAuthServiceProvider) {
-  ehaUserManagementAuthServiceProvider.config({
+app.config(function(ehaUMSAuthServiceProvider) {
+  ehaUMSAuthServiceProvider.config({
     adminRoles: ['admin'],                  // Admin role. (default: `['_admin']`)
     userRoles: ['data_provider', 'analyst'],// Roles other than admin roles
     sessionEndpoint: '_session',            // Configurable session endpoint (default: `'_session'`)
-    interceptor: {                          // Enable HTTP Interceptor (default: false)
-      hosts: [                              // Configure hostnames that should be intercepted for authentication errors (404)
-        'http://authenticated-endpoint.com'
-      ]
-    },
     defaultHttpFields: {                    // Passed through to Angular's $http config (default: unset)
       withCredentials: true                 // See: https://docs.angularjs.org/api/ng/service/$http#usage
     }
@@ -46,10 +43,9 @@ Configuring an interceptor will internally add an `$http` interceptor,
 which will automatically add the bearer token to outcoming requests,
 and handle authentication errors (code 401) in the responses. You can
 react to intercepted errors using the `.on` method, see
-[below](#onevent-handler). The interceptor will act on communications
-with locations matching one of the values in `hosts`.
+[below](#onevent-handler).
 
-### ehaUserManagementAuthService
+### ehaUMSAuthService
 
 #### `getSession()`
 
@@ -58,7 +54,9 @@ during configuration. _Returns a promise._
 
 #### `getCurrentUser()`
 
-_Promise/A+_ Checks the local environment for a user, failing that checks local storage and finally attempts to GET the `_session/` endpoint.
+_Promise/A+_ Gets data from the session endpoint, and add some
+convenience methods to it. Returns a cached version for subsequent
+requests
 
 _Returns a promise_
 
@@ -71,10 +69,17 @@ Event subscription handler
 
 ##### Supported events:
 
-- `unauthenticated` - fired whenever an unauthenticated user / session attempts to access a resource that requires authentication.
-- `unauthorized` - fired whenever the current user / session is unauthorised to access a resource
+Supported events are exposed as constants, so that you can get them
+via the Angular dependency system and be sure that you are using the
+right ones
 
-### ehaUserManagementAuthServiceProvider
+- `EHA_UMS_AUTH_UNAUTHENTICATED_EVENT` - fired whenever an
+  unauthenticated user / session attempts to access a resource that
+  requires authentication.
+- `EHA_UMS_AUTH_UNAUTHORISED_EVENT` - fired whenever the current user
+  / session is unauthorised to access a resource
+
+### ehaUMSAuthServiceProvider
 
 The provider exposes some functions suitable to be used as values for
 the `resolve` option of the `when` method of the `$routeProvider`, or
@@ -87,7 +92,7 @@ have their arguments injected by `$routeProvider`, so use them for
 example like this:
 
 ```js
-var auth = ehaUserManagementAuthServiceProvider.requireAuthenticatedUser;
+var auth = ehaUMSAuthServiceProvider.requireAuthenticatedUser;
 $routeProvider
   .when('/page', {
     templateUrl: 'views/page.html',
@@ -110,8 +115,8 @@ _Promise/A+_ Check if the user has a particular role.
 _Note_: These functions are created dynamically during the configuration of the module. These can cause problems when using the function within `angular-ui-router` if the routes are loaded before configuring the module. This can be avoided by providing the configuration for the roles when initializing the routes:
 
 ```
-  .config(function($stateProvider, ehaUserManagementAuthServiceProvider) {
-    ehaUserManagementAuthServiceProvider.config({
+  .config(function($stateProvider, ehaUMSAuthServiceProvider) {
+    ehaUMSAuthServiceProvider.config({
       userRoles: [
         'data_provider',
         'analyst'
@@ -121,7 +126,7 @@ _Note_: These functions are created dynamically during the configuration of the 
     .state('upload', {
       url: '/upload',
       resolve: {
-        isDataProvider: ehaUserManagementAuthServiceProvider.requireDataProviderUser
+        isDataProvider: ehaUMSAuthServiceProvider.requireDataProviderUser
       },
       views: {
         ...
@@ -139,7 +144,7 @@ Similar to [require<role-name>User](#requirerole-nameuser) but supports checking
 ```js
 // Within a $stateProvider.state declaration
 resolve: {
-  authorization: ehaUserManagementAuthServiceProvider.requireUserWithRoles([
+  authorization: ehaUMSAuthServiceProvider.requireUserWithRoles([
     'data_provider',
     'analyst'
   ])
