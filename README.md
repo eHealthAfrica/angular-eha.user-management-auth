@@ -41,9 +41,13 @@ _Note_: `userRoles` can be camelcase, or hyphenized strings (with '_' or '-' but
 
 Configuring an interceptor will internally add an `$http` interceptor,
 which will automatically add the bearer token to outcoming requests,
-and handle authentication errors (code 401) in the responses. You can
-react to intercepted errors using the `.on` method, see
-[below](#onevent-handler).
+and handle authentication errors (code 401) in the responses.
+
+You can react to intercepted errors using the `.on` method, as
+described [below](#onevent-handler). Usually you would react to
+authorisation errors in order to show a custom message, while
+authentication errors are handled directly by the module by
+redirecting the user to the login page.
 
 ### ehaUMSAuthService
 
@@ -73,11 +77,15 @@ Supported events are exposed as constants, so that you can get them
 via the Angular dependency system and be sure that you are using the
 right ones
 
+- `EHA_UMS_AUTH_UNAUTHORISED_EVENT` - fired whenever the current user
+  / session is not unauthorised to access a resource. In these case we
+  often want to show a custom message to the user to explain what
+  happened
 - `EHA_UMS_AUTH_UNAUTHENTICATED_EVENT` - fired whenever an
   unauthenticated user / session attempts to access a resource that
-  requires authentication.
-- `EHA_UMS_AUTH_UNAUTHORISED_EVENT` - fired whenever the current user
-  / session is unauthorised to access a resource
+  requires authentication. Usually you should not need to access this,
+  as it is handled directly by this module redirecting the user to the
+  login page
 
 ### ehaUMSAuthServiceProvider
 

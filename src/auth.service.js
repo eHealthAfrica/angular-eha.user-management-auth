@@ -97,6 +97,14 @@
         }
       );
 
+      function goToExternal(route) {
+        return function() {
+          $window.location.assign(route)
+        }
+      }
+
+      var login = goToExternal('/login')
+
       var currentUser;
 
       // Create a new 'isolate scope' so that we can leverage and wrap angular's
@@ -104,6 +112,8 @@
       var eventBus = $rootScope.$new(true);
 
       var trigger = eventBus.$broadcast.bind(eventBus);
+
+      eventBus.$on(EHA_UMS_AUTH_UNAUTHENTICATED_EVENT, login)
 
       function getSession() {
         var sessionUrl = options.sessionEndpoint;
@@ -170,12 +180,6 @@
         }
       }
 
-      function goToExternal(route) {
-        return function() {
-          $window.location.assign(route)
-        }
-      }
-
       var service = {
         getSession: getSession,
         getCurrentUser: getCurrentUser,
@@ -188,7 +192,7 @@
             return getSession();
           }
         },
-        login: goToExternal('/login'),
+        login: login,
         logout: goToExternal('/logout'),
         unsafeGetCurrentUserSynchronously: function () {
           // this function was added to integrate more easily with the

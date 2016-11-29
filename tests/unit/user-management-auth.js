@@ -14,7 +14,7 @@ describe('eha.ums-auth', function() {
   var instanceVersion = 0;
   var config;
   var $q;
-  var $window = { location: {} };
+  var $window = { location: { assign: function () {} } };
   var EHA_UMS_AUTH_UNAUTHENTICATED_EVENT;
   var EHA_UMS_AUTH_UNAUTHORISED_EVENT;
 

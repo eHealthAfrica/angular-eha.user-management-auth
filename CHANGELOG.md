@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+#### 2.1.0 - 2016-11-29
+
+##### New
+
+- Automatically redirect the user to login when an authentication error occurs
 
 #### 2.0.0 - 2016-11-10
 
