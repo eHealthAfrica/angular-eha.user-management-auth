@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+#### 2.1.1 - 2016-11-29
+
+##### Internal
+
+- The previous version did not include a `dist/` folder and it is
+  therefore unusable, this one fixes the problem by including the
+  necessary built files
+
 #### 2.1.0 - 2016-11-29
 
 ##### New
