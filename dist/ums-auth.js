@@ -140,7 +140,7 @@
             if (context) {
               return context;
             } else {
-              $q.reject('User context not found');
+              return $q.reject('User context not found');
             }
           })
           .catch(function () {

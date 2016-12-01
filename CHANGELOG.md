@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+#### 2.1.3 - 2016-12-01
+
+##### Internal
+
+- The previous version did not have an updated build, this amends
+
 #### 2.1.2 - 2016-12-01
 
 ##### Internal
