@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+#### 2.1.2 - 2016-12-01
+
+##### Internal
+
+- Fixed a bug which caused ineffective handling of an erroneous
+  response, this could solve CCSL-1890
+
 #### 2.1.1 - 2016-11-29
 
 ##### Internal
