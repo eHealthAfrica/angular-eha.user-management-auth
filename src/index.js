@@ -4,7 +4,8 @@
     'eha.ums-auth.http-interceptor',
     'eha.ums-auth.auth.service',
     'eha.ums-auth.show-for-role.directive',
-    'eha.ums-auth.show-authenticated.directive'
+    'eha.ums-auth.show-authenticated.directive',
+    'ngCookies'
   ]);
 
   // Check for and export to commonjs environment
