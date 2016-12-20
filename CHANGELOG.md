@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+#### 2.2.2 - 2016-12-20
+
+- Support `undefined` groups, closes CCSL-1950
+
 #### 2.2.1 - 2016-12-20
 
 - The previous version did not have an updated build, this amends

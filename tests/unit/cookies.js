@@ -44,5 +44,10 @@ describe('the cookie parsing utility', function() {
     mockAttributesCookie('eyJ1c2VyX2ltYWdlIjoiVHJ1ZSIsImdyb3VwcyI6IkJvbnRoZSxtb3lhbWJhIiwiZGlzcGxheV9uYW1lIjoiVHJ1ZSIsInJvbGVzIjoiY2FsbGJhY2tzLGtpYmFuYSIsIm9fayI6InNoYTEkMjAwMDAkYzQ5Zjc1ZThhZGVmNGJhNWJhM2ZjMzA4ZjViZWUyYjckZjlhYzg4NTk4MTUyMjRhMzZjZjc4MDZjZTY1Yjc4NjFiMzcwYjdjYSJ9')
     expect(ehaUMSAuthCookies.getAGroup()).to.equal('moyamba') // or 'Bonthe'. There are two groups here, and the behavior is not defined by the specs, so we can just pick a random one
   })
+
+  it('fails gracefully when no groups are provided', function () {
+    mockAttributesCookie('eyJ1c2VyX2ltYWdlIjoiVHJ1ZSIsImRpc3BsYXlfbmFtZSI6IlRydWUiLCJyb2xlcyI6ImNhbGxiYWNrcyxraWJhbmEiLCJvX2siOiJzaGExJDIwMDAwJGM0OWY3NWU4YWRlZjRiYTViYTNmYzMwOGY1YmVlMmI3JGY5YWM4ODU5ODE1MjI0YTM2Y2Y3ODA2Y2U2NWI3ODYxYjM3MGI3Y2EifQ==')
+    expect(ehaUMSAuthCookies.getAGroup()).to.be.undefined
+  })
 })
 
