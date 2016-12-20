@@ -1,6 +1,6 @@
 {
   "name": "angular-eha.ums-auth",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "user management client for Angular",
   "authors": [
     "Matt Richards <matt@lucidmoon.co.uk>",
