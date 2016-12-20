@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+#### 2.2.1 - 2016-12-20
+
+- The previous version did not have an updated build, this amends
+
 #### 2.2.0 - 2016-12-15
 
 - Add the `ehaUMSAuthCookies` service with methods like `getAGroup`
