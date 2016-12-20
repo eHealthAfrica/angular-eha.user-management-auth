@@ -10,7 +10,14 @@ Install version 1.0.0 with Bower:
 
     bower install --save https://github.com/eHealthAfrica/angular-eha.ums-auth#1.0.0
 
-Please make sure to use the latest version if possible
+Please make sure to use the latest version if possible.
+
+### Peer dependency
+
+This library uses the `$cookies` service provided by the `ngCookies`
+module. The referenced version is 1.5.9, but [any version after 1.4
+should
+work](https://code.angularjs.org/1.5.9/docs/api/ngCookies/service/$cookies).
 
 ## Usage
 

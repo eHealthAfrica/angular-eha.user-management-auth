@@ -30,7 +30,8 @@ module.exports = function(grunt) {
           'src/http-interceptor.js',
           'src/show-for-role.directive.js',
           'src/show-authenticated.directive.js',
-          'src/constants.js'
+          'src/constants.js',
+          'src/cookies.js'
         ],
         dest: '.tmp/scripts.js',
         options: {
