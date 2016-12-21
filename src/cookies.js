@@ -44,7 +44,8 @@ angular
     service.getAGroup = function () {
       var stringifiedAttributes = service.attributesGetCookie()
       var attributes = JSON.parse(stringifiedAttributes)
-      return aCommaSeparated(attributes['groups'])
+      var groups = attributes['groups']
+      return groups ? aCommaSeparated(groups) : groups
     }
 
     return service
