@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+#### 2.2.3 - 2017-01-12
+
+- Fix `EHA_UMS_AUTH_UNAUTHORISED_EVENT` not defined error, closes POLIOEOC-331
+
 #### 2.2.2 - 2016-12-20
 
 - Support `undefined` groups, closes CCSL-1950
