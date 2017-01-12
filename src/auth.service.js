@@ -31,12 +31,12 @@
       return words.join('');
     }
 
-    function requireUserWithRoles(ehaUMSAuthService, $q, roles) {
+    function requireUserWithRoles(ehaUMSAuthService, $q, roles, unauthorisedEvent) {
       return ehaUMSAuthService.getCurrentUser()
         .then(function(user) {
           if (user && !user.isAdmin() && !user.hasRole(roles)) {
-            ehaUMSAuthService.trigger(EHA_UMS_AUTH_UNAUTHORISED_EVENT);
-            return $q.reject(EHA_UMS_AUTH_UNAUTHORISED_EVENT);
+            ehaUMSAuthService.trigger(unauthorisedEvent);
+            return $q.reject(unauthorisedEvent);
           }
           return user;
         });
@@ -56,7 +56,8 @@
         config.userRoles.forEach(function(role) {
           var functionName = 'require' + camelCase(role) + 'User';
           this[functionName] = function(ehaUMSAuthService, $q) {
-            return requireUserWithRoles(ehaUMSAuthService, $q, [role]);
+            return requireUserWithRoles(
+              ehaUMSAuthService, $q, [role], EHA_UMS_AUTH_UNAUTHORISED_EVENT);
           };
         }.bind(this));
       }
@@ -64,7 +65,7 @@
 
     this.requireAdminUser = function(ehaUMSAuthService, $q) {
       return requireUserWithRoles(
-        ehaUMSAuthService, $q, options.adminRoles);
+        ehaUMSAuthService, $q, options.adminRoles, EHA_UMS_AUTH_UNAUTHORISED_EVENT);
     };
 
     this.requireAuthenticatedUser = function(ehaUMSAuthService, $q) {
@@ -73,7 +74,8 @@
 
     this.requireUserWithRoles = function(roles) {
       return function(ehaUMSAuthService, $q) {
-        return requireUserWithRoles(ehaUMSAuthService, $q, roles);
+        return requireUserWithRoles(
+          ehaUMSAuthService, $q, roles, EHA_UMS_AUTH_UNAUTHORISED_EVENT);
       };
     };
 
