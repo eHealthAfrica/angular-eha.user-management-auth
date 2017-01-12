@@ -31,18 +31,7 @@
       return words.join('');
     }
 
-    function requireUserWithRoles(ehaUMSAuthService, $q, roles, unauthorisedEvent) {
-      return ehaUMSAuthService.getCurrentUser()
-        .then(function(user) {
-          if (user && !user.isAdmin() && !user.hasRole(roles)) {
-            ehaUMSAuthService.trigger(unauthorisedEvent);
-            return $q.reject(unauthorisedEvent);
-          }
-          return user;
-        });
-    }
-
-    this.config = function(config) {
+    this.config = function (config) {
       options = angular.extend(options, config);
 
       if (config.interceptor) {
@@ -53,29 +42,26 @@
       }
 
       if (config.userRoles) {
-        config.userRoles.forEach(function(role) {
+        config.userRoles.forEach(function (role) {
           var functionName = 'require' + camelCase(role) + 'User';
-          this[functionName] = function(ehaUMSAuthService, $q) {
-            return requireUserWithRoles(
-              ehaUMSAuthService, $q, [role], EHA_UMS_AUTH_UNAUTHORISED_EVENT);
+          this[functionName] = function (ehaUMSAuthService) {
+            return ehaUMSAuthService.requireUserWithAnyRole([role])
           };
         }.bind(this));
       }
     };
 
-    this.requireAdminUser = function(ehaUMSAuthService, $q) {
-      return requireUserWithRoles(
-        ehaUMSAuthService, $q, options.adminRoles, EHA_UMS_AUTH_UNAUTHORISED_EVENT);
+    this.requireAdminUser = function (ehaUMSAuthService) {
+      return ehaUMSAuthService.requireUserWithAnyRole(options.adminRoles)
     };
 
-    this.requireAuthenticatedUser = function(ehaUMSAuthService, $q) {
+    this.requireAuthenticatedUser = function (ehaUMSAuthService) {
       return ehaUMSAuthService.getCurrentUser()
     };
 
-    this.requireUserWithRoles = function(roles) {
-      return function(ehaUMSAuthService, $q) {
-        return requireUserWithRoles(
-          ehaUMSAuthService, $q, roles, EHA_UMS_AUTH_UNAUTHORISED_EVENT);
+    this.requireUserWithRoles = function (roles) {
+      return function (ehaUMSAuthService) {
+        return ehaUMSAuthService.requireUserWithAnyRole(roles)
       };
     };
 
