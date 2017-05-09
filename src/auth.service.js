@@ -106,7 +106,7 @@
       function getSession() {
         var sessionUrl = options.sessionEndpoint;
         return $q
-          .when(Restangular.oneUrl('session', sessionUrl).get())
+          .when(restangular.one(sessionUrl).get())
           .then(function(session) {
             var context = session.userCtx
             if (context) {

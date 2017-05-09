@@ -20,7 +20,7 @@ describe('eha.ums-auth', function() {
 
   function provideValidSession (done) {
     $httpBackend
-      .whenGET('_session')
+      .whenGET(config.auth.api.url + '/_session')
       .respond({
         userCtx: {
           name: 'franco',
@@ -85,7 +85,7 @@ describe('eha.ums-auth', function() {
         });
 
         it('fails as expected', function(done) {
-          $httpBackend.whenGET('_session')
+          $httpBackend.whenGET(config.auth.api.url + '/_session')
             .respond($q.reject());
           service
             .getCurrentUser()
@@ -98,7 +98,7 @@ describe('eha.ums-auth', function() {
 
         it('succeeds as expected', function(done) {
           $httpBackend
-            .whenGET('_session')
+            .whenGET(config.auth.api.url + '/_session')
             .respond({
               userCtx: {
                 name: 'franco',
